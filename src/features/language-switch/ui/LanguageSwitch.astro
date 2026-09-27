@@ -1,0 +1,91 @@
+---
+import type { LanguageOption } from '../model/language-options';
+
+interface Props {
+  current: string;
+  options: readonly LanguageOption[];
+  label: string;
+  storageKey: string;
+}
+
+const { current, options, label, storageKey } = Astro.props;
+---
+
+<nav class="language-switch" aria-label={label}>
+  <ul>
+    {
+      options.map((option) => (
+        <li>
+          <a
+            href={option.path}
+            lang={option.code}
+            hreflang={option.code}
+            aria-current={option.code === current ? 'page' : undefined}
+            data-language-link
+            data-language={option.code}
+            data-path={option.path}
+            data-storage-key={storageKey}
+          >
+            <span class="language-name">{option.name}</span>
+            <span class="language-short" aria-hidden="true">
+              {option.shortName}
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<script>
+  import { bindLanguageLinks } from './bind-language-links';
+
+  bindLanguageLinks(document);
+</script>
+
+<style>
+  .language-switch ul {
+    display: flex;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .language-switch a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--touch-target);
+    min-height: var(--touch-target);
+    padding: 0 10px;
+    border-radius: 999px;
+    color: var(--color-ink);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .language-switch a[aria-current='page'] {
+    background: var(--color-sea);
+    color: var(--color-surface);
+  }
+
+  .language-short {
+    display: none;
+  }
+
+  @media (max-width: 599px) {
+    .language-name {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+
+    .language-short {
+      display: inline;
+    }
+  }
+</style>

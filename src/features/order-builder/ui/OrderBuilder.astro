@@ -1,0 +1,492 @@
+---
+import { chatLink, phoneCallLink } from '../../../shared/api/messenger-link';
+import type { SiteConfig } from '../../../shared/config/site-config';
+import { dictionaryFor, text, type Dictionaries } from '../../../shared/i18n/dictionary';
+import { fillTemplate } from '../../../shared/i18n/template';
+import { formatMoney, formatVolume } from '../../../shared/i18n/number-format';
+import { createBuilderData } from '../model/builder-data';
+import { BUILDER_FIELD, NO_PUMP_VALUE } from '../model/builder-state';
+import { serializeBuilderData } from '../model/serialize-builder-data';
+
+interface Props {
+  config: SiteConfig;
+  dictionaries: Dictionaries;
+  language: string;
+}
+
+const { config, dictionaries, language } = Astro.props;
+const dictionary = dictionaryFor(dictionaries, language);
+const say = (key: string) => text(dictionary, key);
+const data = createBuilderData(config, dictionaries, language);
+const money = (amount: number) => formatMoney(amount, language, data.currency);
+const laneWord = `<span lang="vi">${say('address.lane_word')}</span>`;
+const [firstPayment] = data.payments;
+---
+
+<section class="builder" id="order" aria-labelledby="builder-title" data-order-builder>
+  <h2 id="builder-title">{say('builder.title')}</h2>
+  <p class="builder-noscript" data-no-js-only>{say('builder.noscript')}</p>
+
+  <form class="builder-form" data-requires-js data-builder-form novalidate>
+    <fieldset class="field">
+      <legend>{say('builder.mode.legend')}</legend>
+      <div class="choices choices-two">
+        <label class="choice">
+          <input type="radio" name={BUILDER_FIELD.mode} value="first" checked />
+          <span class="choice-title">{say('builder.mode.first')}</span>
+          <span class="choice-hint">{say('builder.mode.first_hint')}</span>
+        </label>
+        <label class="choice">
+          <input type="radio" name={BUILDER_FIELD.mode} value="refill" />
+          <span class="choice-title">{say('builder.mode.refill')}</span>
+          <span class="choice-hint">{say('builder.mode.refill_hint')}</span>
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset class="field">
+      <legend>{say('builder.brand.legend')}</legend>
+      <div class="choices">
+        {
+          data.brands.map((brand) => (
+            <label class="choice brand">
+              <input type="radio" name={BUILDER_FIELD.brand} value={brand.id} />
+              <span class="choice-title">{brand.name}</span>
+              <span class="choice-hint">
+                {say(`water.${brand.waterType}`)}, {formatVolume(brand.volumeLiters, language)} {say('message.liter_unit')}
+              </span>
+              {brand.hasTap && <span class="choice-hint">{say('builder.brand.tap')}</span>}
+              <span class="brand-price">{fillTemplate(say('builder.brand.per_bottle'), { amount: money(brand.price) })}</span>
+              <span class="choice-hint">{fillTemplate(say('builder.brand.deposit'), { amount: money(brand.deposit) })}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <fieldset class="field">
+      <legend>{say('builder.quantity.legend')}</legend>
+      <div class="stepper">
+        <button type="button" class="stepper-button" data-quantity-step="-1" aria-label={say('builder.quantity.decrease')}>
+          <span aria-hidden="true">−</span>
+        </button>
+        <output class="stepper-value" data-quantity-value aria-live="polite">{data.limits.minimum}</output>
+        <button type="button" class="stepper-button" data-quantity-step="1" aria-label={say('builder.quantity.increase')}>
+          <span aria-hidden="true">+</span>
+        </button>
+      </div>
+      <p class="hint" data-quantity-hint></p>
+    </fieldset>
+
+    <fieldset class="field" data-pump-field hidden>
+      <legend>{say('builder.pump.legend')}</legend>
+      <div class="choices">
+        <label class="choice choice-inline">
+          <input type="radio" name={BUILDER_FIELD.pump} value={NO_PUMP_VALUE} checked />
+          <span class="choice-title">{say('builder.pump.none')}</span>
+        </label>
+        {
+          data.pumps.map((pump) => (
+            <label class="choice choice-inline">
+              <input type="radio" name={BUILDER_FIELD.pump} value={pump.id} />
+              <span class="choice-title">{say(`pump.${pump.id}`)}</span>
+              <span class="choice-hint">{money(pump.price)}</span>
+            </label>
+          ))
+        }
+      </div>
+      <p class="hint">{say('builder.pump.hint')}</p>
+    </fieldset>
+
+    <fieldset class="field">
+      <legend>{say('builder.location.legend')}</legend>
+      <button type="button" class="secondary-button" data-geo-button>{say('builder.location.geo_button')}</button>
+      <p class="hint geo-status" data-geo-status role="status"></p>
+      <label class="input-label" for="builder-address">{say('builder.location.address_label')}</label>
+      <input
+        class="text-input"
+        id="builder-address"
+        name="address"
+        type="text"
+        autocomplete="street-address"
+        aria-describedby="builder-address-hint"
+        data-address-input
+      />
+      <p class="hint" id="builder-address-hint" set:html={fillTemplate(say('builder.location.address_hint'), { lane: laneWord })} />
+    </fieldset>
+
+    <fieldset class="field">
+      <legend>{say('builder.day.legend')}</legend>
+      <div class="choices choices-two">
+        <label class="choice choice-inline">
+          <input type="radio" name={BUILDER_FIELD.day} value="today" checked />
+          <span class="choice-title">{say('builder.day.today')}</span>
+        </label>
+        <label class="choice choice-inline">
+          <input type="radio" name={BUILDER_FIELD.day} value="tomorrow" />
+          <span class="choice-title">{say('builder.day.tomorrow')}</span>
+        </label>
+      </div>
+      <p class="hint" data-today-closed></p>
+    </fieldset>
+
+    <fieldset class="field">
+      <legend>{say('builder.payment.legend')}</legend>
+      <div class="choices choices-two">
+        {
+          data.payments.map((payment) => (
+            <label class="choice choice-inline">
+              <input type="radio" name={BUILDER_FIELD.payment} value={payment} checked={payment === firstPayment} />
+              <span class="choice-title">{say(`payment.${payment}`)}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <div class="summary" data-summary hidden>
+      <dl class="summary-rows">
+        <div class="summary-row">
+          <dt>{say('builder.total.water')}</dt>
+          <dd data-total="water"></dd>
+        </div>
+        <div class="summary-row" data-total-row="deposit">
+          <dt>{say('builder.total.deposit')}</dt>
+          <dd data-total="deposit"></dd>
+        </div>
+        <div class="summary-row" data-total-row="pump">
+          <dt>{say('builder.total.pump')}</dt>
+          <dd data-total="pump"></dd>
+        </div>
+        <div class="summary-row">
+          <dt>{say('builder.total.delivery')}</dt>
+          <dd>{say('builder.total.delivery_free')}</dd>
+        </div>
+        <div class="summary-row summary-total">
+          <dt>{say('builder.total.label')}</dt>
+          <dd data-total="total"></dd>
+        </div>
+      </dl>
+      <p class="hint" data-deposit-note>{say('builder.total.deposit_note')}</p>
+    </div>
+  </form>
+
+  <div class="send">
+    <h3 class="send-title">{say('builder.send.title')}</h3>
+    <ul class="send-links">
+      {
+        data.messengers.map((messenger) => (
+          <li>
+            <a class="send-link" href={chatLink(messenger)} target="_blank" rel="noopener" data-send-link={messenger.id}>
+              {messenger.label}
+            </a>
+          </li>
+        ))
+      }
+      <li>
+        <a class="call-link" href={phoneCallLink(config.contacts.phone)}>{say('builder.send.call')}</a>
+      </li>
+    </ul>
+    <div class="missing" data-missing data-requires-js>
+      <p class="missing-title">{say('builder.missing.title')}</p>
+      <ul class="missing-list" data-missing-list></ul>
+    </div>
+    <p class="send-status" data-send-status role="status"></p>
+  </div>
+
+  <details class="preview" open data-requires-js>
+    <summary>{say('builder.preview.title')}</summary>
+    <pre class="preview-text" data-message-preview>{say('builder.preview.empty')}</pre>
+  </details>
+
+  <script type="application/json" data-builder-data set:html={serializeBuilderData(data)} />
+</section>
+
+<script>
+  import { mountOrderBuilder } from './mount-order-builder';
+
+  document.querySelectorAll<HTMLElement>('[data-order-builder]').forEach(mountOrderBuilder);
+</script>
+
+<style>
+  .builder {
+    display: grid;
+    gap: var(--gap);
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 24px var(--gap) 48px;
+  }
+
+  .builder-form {
+    display: grid;
+    gap: var(--gap);
+  }
+
+  .field {
+    min-width: 0;
+    margin: 0;
+    padding: var(--gap);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  legend {
+    padding: 0 4px;
+    font-weight: 700;
+  }
+
+  .choices {
+    display: grid;
+    gap: 8px;
+  }
+
+  @media (min-width: 600px) {
+    .choices-two {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .choice {
+    position: relative;
+    display: grid;
+    gap: 2px;
+    min-height: var(--touch-target);
+    padding: 10px 12px 10px 44px;
+    border: 2px solid var(--color-line);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  .choice input {
+    position: absolute;
+    top: 13px;
+    left: 14px;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--color-sea);
+  }
+
+  .choice:has(input:checked) {
+    border-color: var(--color-sea);
+    background: var(--color-selected);
+  }
+
+  .choice:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .choice:has(input:focus-visible) {
+    outline: 3px solid var(--color-sea);
+    outline-offset: 2px;
+  }
+
+  .choice-title {
+    font-weight: 700;
+  }
+
+  .choice-hint,
+  .hint {
+    color: var(--color-muted);
+    font-size: 0.9375rem;
+  }
+
+  .hint {
+    margin: 8px 0 0;
+  }
+
+  .hint:empty {
+    display: none;
+  }
+
+  .brand-price {
+    font-weight: 700;
+  }
+
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .stepper-button {
+    width: var(--touch-target);
+    height: var(--touch-target);
+    border: 2px solid var(--color-sea);
+    border-radius: 50%;
+    background: var(--color-surface);
+    color: var(--color-sea-dark);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .stepper-button:disabled {
+    border-color: var(--color-line);
+    color: var(--color-muted);
+    cursor: not-allowed;
+  }
+
+  .stepper-value {
+    min-width: 2ch;
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .secondary-button {
+    min-height: var(--touch-target);
+    padding: 8px 16px;
+    border: 2px solid var(--color-sea);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-sea-dark);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .input-label {
+    display: block;
+    margin-top: 12px;
+    font-weight: 600;
+  }
+
+  .text-input {
+    width: 100%;
+    min-height: var(--touch-target);
+    margin-top: 4px;
+    padding: 8px 12px;
+    border: 2px solid var(--color-line);
+    border-radius: 10px;
+    font: inherit;
+  }
+
+  .summary {
+    padding: var(--gap);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    border: 2px solid var(--color-sea);
+  }
+
+  .summary-rows {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--gap);
+  }
+
+  .summary-row dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .summary-total {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-line);
+    font-size: 1.375rem;
+    font-weight: 800;
+  }
+
+  .send {
+    padding: var(--gap);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+  }
+
+  .send-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .send-link,
+  .call-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .send-link {
+    background: var(--color-sea);
+    color: var(--color-surface);
+  }
+
+  .send-link[aria-disabled='true'] {
+    background: var(--color-line);
+    color: var(--color-muted);
+    cursor: not-allowed;
+  }
+
+  .call-link {
+    border: 2px solid var(--color-sea);
+    color: var(--color-sea-dark);
+  }
+
+  .missing {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--color-warning-surface);
+    color: var(--color-warning-ink);
+  }
+
+  .missing-title {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .missing-list {
+    margin: 4px 0 0;
+    padding-left: 20px;
+  }
+
+  .send-status {
+    margin: 12px 0 0;
+    color: var(--color-success-ink);
+    font-weight: 600;
+  }
+
+  .send-status:empty {
+    display: none;
+  }
+
+  .preview summary {
+    min-height: var(--touch-target);
+    padding: 10px 0;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .preview-text {
+    margin: 0;
+    padding: var(--gap);
+    overflow-x: auto;
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+</style>

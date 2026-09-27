@@ -1,7 +1,13 @@
 import type { Settings } from '../../shared/config/settings';
 import { dictionaryFor, text } from '../../shared/i18n/dictionary';
 import { fillTemplate } from '../../shared/i18n/template';
-import { alternateLinks, defaultUrl, localizedUrl, type AlternateLink, type LocalizedSite } from '../../shared/lib/alternate-links';
+import {
+  alternateLinks,
+  defaultUrl,
+  localizedUrl,
+  type AlternateLink,
+  type LocalizedSite,
+} from '../../shared/lib/alternate-links';
 import { absoluteUrl, localizedPath, SITE_ROUTE, type SiteRoute } from '../../shared/lib/site-route';
 
 export const SHARE_IMAGE_FILE = 'og.png';
@@ -17,7 +23,6 @@ export interface PageMeta {
   readonly ogLocale: string;
   readonly siteName: string;
   readonly noindex: boolean;
-  readonly fontSubsets: readonly string[];
   readonly analyticsQueue: string;
 }
 
@@ -53,7 +58,6 @@ export function pageMeta(settings: Settings, language: string, route: SiteRoute,
     ogLocale: say('meta.og_locale'),
     siteName: config.brand.name,
     noindex: config.site.noindex,
-    fontSubsets: config.design.font.preload[language] ?? [],
     analyticsQueue: config.analytics.queueName,
   };
 }

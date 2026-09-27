@@ -56,13 +56,6 @@ describe('parseSiteConfig', () => {
     expect(config.languages.local).toBe('vi');
   });
 
-  it('parseSiteConfig_withPreloadSubsetOutsideFontSubsets_throws', () => {
-    const raw = rawConfigFixture();
-    const font = { ...raw.design.font, preload: { ...raw.design.font.preload, ru: ['greek'] } };
-
-    expect(() => parseSiteConfig({ ...raw, design: { ...raw.design, font } })).toThrow(/design\.font\.preload\.ru names subsets/);
-  });
-
   it('parseSiteConfig_withRepeatedZoneId_throws', () => {
     const raw = rawConfigFixture();
     const [first] = raw.zone;

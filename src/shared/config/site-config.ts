@@ -134,7 +134,6 @@ const rawSiteConfigSchema = z.object({
       family: nonEmptyText,
       weights: z.string().regex(FONT_WEIGHT_RANGE),
       subsets: z.array(fontSubset).min(1),
-      preload: z.record(languageCode, z.array(fontSubset).min(1)),
     }),
     share_image: z.object({
       font_package: nonEmptyText,
@@ -185,15 +184,6 @@ function findConsistencyProblems(raw: RawSiteConfig): string[] {
       problems.push(`messengers.order has no entry for language "${language}"`);
     } else if (duplicates(order).length > 0) {
       problems.push(`messengers.order.${language} repeats ${duplicates(order).join(', ')}`);
-    }
-    const preload = raw.design.font.preload[language];
-    if (preload === undefined) {
-      problems.push(`design.font.preload has no entry for language "${language}"`);
-    } else {
-      const unknownSubsets = preload.filter((subset) => !raw.design.font.subsets.includes(subset));
-      if (unknownSubsets.length > 0) {
-        problems.push(`design.font.preload.${language} names subsets not in design.font.subsets: ${unknownSubsets.join(', ')}`);
-      }
     }
   }
   const brandIds = raw.brands.map((brand) => brand.id);

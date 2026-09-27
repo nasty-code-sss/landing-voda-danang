@@ -1,0 +1,61 @@
+---
+import BaseLayout from '../../app/layouts/BaseLayout.astro';
+import { languageOptions } from '../../features/language-switch/model/language-options';
+import OrderBuilder from '../../features/order-builder/ui/OrderBuilder.astro';
+import { settings } from '../../shared/config/current-settings';
+import { dictionaryFor, text } from '../../shared/i18n/dictionary';
+import { fillTemplate } from '../../shared/i18n/template';
+import { sitePath } from '../../shared/lib/site-path';
+import SiteHeader from '../../widgets/site-header/ui/SiteHeader.astro';
+
+export function getStaticPaths() {
+  return settings.config.languages.supported.map((lang) => ({ params: { lang } }));
+}
+
+const { config, dictionaries } = settings;
+const language = Astro.params.lang ?? config.languages.default;
+const dictionary = dictionaryFor(dictionaries, language);
+const say = (key: string) => text(dictionary, key);
+---
+
+<BaseLayout
+  lang={language}
+  title={fillTemplate(say('meta.title'), { brand: config.brand.name })}
+  description={say('meta.description')}
+  noindex={config.site.noindex}
+>
+  <SiteHeader
+    brandName={config.brand.name}
+    tagline={say('brand.tagline')}
+    homePath={sitePath(config.site.base, language)}
+    demoLabel={config.site.demo ? say('header.demo') : null}
+    language={language}
+    languages={languageOptions(config, dictionaries)}
+    languageLabel={say('language.switch_label')}
+    storageKey={config.browserStorage.languageKey}
+  />
+  <main>
+    <section class="hero">
+      <h1>{say('hero.title')}</h1>
+      <p>{say('hero.subtitle')}</p>
+    </section>
+    <OrderBuilder config={config} dictionaries={dictionaries} language={language} />
+  </main>
+</BaseLayout>
+
+<style>
+  .hero {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 24px var(--gap) 0;
+  }
+
+  .hero h1 {
+    font-size: 1.625rem;
+  }
+
+  .hero p {
+    margin: 0;
+    color: var(--color-muted);
+  }
+</style>

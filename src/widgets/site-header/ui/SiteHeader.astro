@@ -1,0 +1,76 @@
+---
+import LanguageSwitch from '../../../features/language-switch/ui/LanguageSwitch.astro';
+import type { LanguageOption } from '../../../features/language-switch/model/language-options';
+
+interface Props {
+  brandName: string;
+  tagline: string;
+  homePath: string;
+  demoLabel: string | null;
+  language: string;
+  languages: readonly LanguageOption[];
+  languageLabel: string;
+  storageKey: string;
+}
+
+const { brandName, tagline, homePath, demoLabel, language, languages, languageLabel, storageKey } = Astro.props;
+---
+
+<header class="site-header">
+  {demoLabel !== null && <p class="demo-badge">{demoLabel}</p>}
+  <div class="site-header-row">
+    <a class="logo" href={homePath}>
+      <span class="logo-name">{brandName}</span>
+      <span class="logo-tagline">{tagline}</span>
+    </a>
+    <LanguageSwitch current={language} options={languages} label={languageLabel} storageKey={storageKey} />
+  </div>
+</header>
+
+<style>
+  .site-header {
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .demo-badge {
+    margin: 0;
+    padding: 4px var(--gap);
+    background: var(--color-warning-surface);
+    color: var(--color-warning-ink);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .site-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap);
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 8px var(--gap);
+  }
+
+  .logo {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .logo-name {
+    color: var(--color-sea-dark);
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .logo-tagline {
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+</style>

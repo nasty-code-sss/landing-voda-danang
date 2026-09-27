@@ -1,0 +1,118 @@
+---
+import type { LanguageOption } from '../model/language-options';
+
+interface Props {
+  brandName: string;
+  options: readonly LanguageOption[];
+  storageKey: string;
+}
+
+const { brandName, options, storageKey } = Astro.props;
+---
+
+<main class="picker" data-language-picker data-storage-key={storageKey} data-pending>
+  <p class="picker-brand">{brandName}</p>
+  <h1 class="picker-title">
+    {
+      options.map((option) => (
+        <span lang={option.code} class="picker-title-line">
+          {option.pickerTitle}
+        </span>
+      ))
+    }
+  </h1>
+  <ul class="picker-options">
+    {
+      options.map((option) => (
+        <li>
+          <a
+            class="picker-option"
+            href={option.path}
+            lang={option.code}
+            hreflang={option.code}
+            data-language-option
+            data-language={option.code}
+            data-path={option.path}
+          >
+            {option.name}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</main>
+
+<script>
+  import { mountLanguagePicker } from './mount-language-picker';
+
+  const picker = document.querySelector<HTMLElement>('[data-language-picker]');
+  if (picker !== null) {
+    mountLanguagePicker(picker);
+  }
+</script>
+
+<style>
+  .picker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 32px var(--gap);
+    text-align: center;
+  }
+
+  .js .picker[data-pending] {
+    visibility: hidden;
+  }
+
+  .picker-brand {
+    margin: 0 0 16px;
+    color: var(--color-sea-dark);
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .picker-title {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 1.375rem;
+  }
+
+  .picker-title-line + .picker-title-line {
+    color: var(--color-muted);
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .picker-options {
+    display: grid;
+    gap: 12px;
+    width: 100%;
+    max-width: 360px;
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .picker-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 56px;
+    border: 2px solid var(--color-line);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-size: 1.125rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .picker-option[data-preferred] {
+    border-color: var(--color-sea);
+    background: var(--color-selected);
+  }
+</style>

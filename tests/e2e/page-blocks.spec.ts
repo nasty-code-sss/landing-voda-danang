@@ -40,8 +40,9 @@ test.describe('page blocks around the builder', () => {
     await page.locator('#faq details').nth(2).locator('summary').click();
     await page.locator('#faq details').nth(6).locator('summary').click();
 
-    const opened = (await queuedEvents(page)).filter((event) => event.event === 'faq_open').map((event) => event.question);
-    expect(opened).toEqual(['3', '7']);
+    const openedQuestions = async () =>
+      (await queuedEvents(page)).filter((event) => event.event === 'faq_open').map((event) => event.question);
+    await expect.poll(openedQuestions).toEqual(['3', '7']);
   });
 
   test('first landlord link opens a chat prefilled in the page language and vietnamese, the same text is copied', async ({

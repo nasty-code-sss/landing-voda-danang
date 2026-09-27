@@ -20,21 +20,19 @@ const messengers = (config.messengers.order[language] ?? []).map((id) => ({ id, 
     <h2 id="final-call-title">{say('final.title')}</h2>
     <p>{say('final.text')}</p>
     <ul class="final-call-links">
-      {
-        messengers.map((messenger) => (
-          <li>
-            <a
-              class="button button-inverse"
-              href={anchorHref(PAGE_ANCHOR.order)}
-              data-analytics-click={ANALYTICS_EVENT.ctaClick}
-              data-analytics-param-block={CTA_BLOCK}
-              data-analytics-param-messenger={messenger.id}
-            >
-              {messenger.label}
-            </a>
-          </li>
-        ))
-      }
+      {messengers.map((messenger) => (
+        <li>
+          <a
+            class="button button-inverse"
+            href={anchorHref(PAGE_ANCHOR.order)}
+            data-analytics-click={ANALYTICS_EVENT.ctaClick}
+            data-analytics-param-block={CTA_BLOCK}
+            data-analytics-param-messenger={messenger.id}
+          >
+            {messenger.label}
+          </a>
+        </li>
+      ))}
     </ul>
   </div>
 </section>

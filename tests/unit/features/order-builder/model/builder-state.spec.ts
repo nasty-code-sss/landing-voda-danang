@@ -41,7 +41,11 @@ describe('readBuilderState', () => {
 describe('writeBuilderQuery', () => {
   it('writeBuilderQuery_keepsForeignParametersAndDropsDefaults', () => {
     const state = readBuilderState(new URLSearchParams('mode=refill&brand=biwa&utm_source=qr'), data);
-    const query = writeBuilderQuery({ ...state, mode: 'first', quantity: 4 }, data, new URLSearchParams('utm_source=qr&mode=refill'));
+    const query = writeBuilderQuery(
+      { ...state, mode: 'first', quantity: 4 },
+      data,
+      new URLSearchParams('utm_source=qr&mode=refill'),
+    );
 
     expect(query.toString()).toBe('utm_source=qr&brand=biwa&qty=4');
   });

@@ -58,17 +58,27 @@ const sections = [LEGAL_ANCHOR.privacy, LEGAL_ANCHOR.terms, LEGAL_ANCHOR.complai
     <h1>{say('legal.title')}</h1>
     {config.site.demo && <p class="legal-demo">{say('legal.demo_note')}</p>}
     <nav class="legal-toc" aria-label={say('legal.toc_label')}>
-      <ul>{sections.map((section) => <li><a href={`#${section.anchor}`}>{section.title}</a></li>)}</ul>
+      <ul>
+        {sections.map((section) => (
+          <li>
+            <a href={`#${section.anchor}`}>{section.title}</a>
+          </li>
+        ))}
+      </ul>
     </nav>
-    {
-      sections.map((section) => (
-        <section id={section.anchor} aria-labelledby={`${section.anchor}-title`}>
-          <h2 id={`${section.anchor}-title`}>{section.title}</h2>
-          {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
-        </section>
-      ))
-    }
-    <p><a class="button button-secondary" href={homePath}>{say('legal.back')}</a></p>
+    {sections.map((section) => (
+      <section id={section.anchor} aria-labelledby={`${section.anchor}-title`}>
+        <h2 id={`${section.anchor}-title`}>{section.title}</h2>
+        {section.paragraphs.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+      </section>
+    ))}
+    <p>
+      <a class="button button-secondary" href={homePath}>
+        {say('legal.back')}
+      </a>
+    </p>
   </main>
   <SiteFooter config={config} dictionaries={dictionaries} say={say} language={language} languages={languages} />
 </BaseLayout>

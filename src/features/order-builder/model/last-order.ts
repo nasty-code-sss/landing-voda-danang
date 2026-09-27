@@ -31,9 +31,7 @@ function readCoordinates(value: unknown): Coordinates | null {
     return null;
   }
   const { latitude, longitude } = value;
-  return isCoordinate(latitude, LATITUDE_LIMIT) && isCoordinate(longitude, LONGITUDE_LIMIT)
-    ? { latitude, longitude }
-    : null;
+  return isCoordinate(latitude, LATITUDE_LIMIT) && isCoordinate(longitude, LONGITUDE_LIMIT) ? { latitude, longitude } : null;
 }
 
 function parseStoredJson(raw: string): unknown {

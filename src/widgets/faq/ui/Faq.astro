@@ -18,18 +18,16 @@ const entries = faqEntries(config, say, language);
 
 <PageSection anchor={PAGE_ANCHOR.faq} title={say('faq.title')}>
   <div class="faq">
-    {
-      entries.map((entry) => (
-        <details
-          class="faq-item"
-          data-analytics-open={ANALYTICS_EVENT.faqOpen}
-          data-analytics-param-question={String(entry.number)}
-        >
-          <summary>{entry.question}</summary>
-          <p>{entry.answer}</p>
-        </details>
-      ))
-    }
+    {entries.map((entry) => (
+      <details
+        class="faq-item"
+        data-analytics-open={ANALYTICS_EVENT.faqOpen}
+        data-analytics-param-question={String(entry.number)}
+      >
+        <summary>{entry.question}</summary>
+        <p>{entry.answer}</p>
+      </details>
+    ))}
   </div>
 </PageSection>
 

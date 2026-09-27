@@ -54,19 +54,15 @@ function messengerChips(messengers: readonly string[]): ShareElement {
 }
 
 export function shareCard(content: ShareCardContent): ShareElement {
-  const text = element(
-    'div',
-    { display: 'flex', flexDirection: 'column', flex: 1, gap: 20, paddingRight: 24 },
-    [
-      element('div', { display: 'flex', flexDirection: 'column' }, [
-        element('div', { fontSize: 40, fontWeight: 800, color: COLORS.seaDark }, content.brand),
-        element('div', { fontSize: 24, fontWeight: 600, color: COLORS.muted }, content.tagline),
-      ]),
-      element('div', { fontSize: 54, fontWeight: 800, color: COLORS.ink, lineHeight: 1.2 }, content.title),
-      element('div', { fontSize: 32, fontWeight: 600, color: COLORS.muted }, content.price),
-      messengerChips(content.messengers),
-    ],
-  );
+  const text = element('div', { display: 'flex', flexDirection: 'column', flex: 1, gap: 20, paddingRight: 24 }, [
+    element('div', { display: 'flex', flexDirection: 'column' }, [
+      element('div', { fontSize: 40, fontWeight: 800, color: COLORS.seaDark }, content.brand),
+      element('div', { fontSize: 24, fontWeight: 600, color: COLORS.muted }, content.tagline),
+    ]),
+    element('div', { fontSize: 54, fontWeight: 800, color: COLORS.ink, lineHeight: 1.2 }, content.title),
+    element('div', { fontSize: 32, fontWeight: 600, color: COLORS.muted }, content.price),
+    messengerChips(content.messengers),
+  ]);
   const illustration = element('img', {}, undefined, {
     src: illustrationSource(),
     width: BOTTLE_SCENE_WIDTH * ILLUSTRATION_SCALE,

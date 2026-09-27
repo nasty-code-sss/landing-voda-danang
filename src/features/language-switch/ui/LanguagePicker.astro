@@ -13,32 +13,28 @@ const { brandName, options, storageKey } = Astro.props;
 <main class="picker" data-language-picker data-storage-key={storageKey} data-pending>
   <p class="picker-brand">{brandName}</p>
   <h1 class="picker-title">
-    {
-      options.map((option) => (
-        <span lang={option.code} class="picker-title-line">
-          {option.pickerTitle}
-        </span>
-      ))
-    }
+    {options.map((option) => (
+      <span lang={option.code} class="picker-title-line">
+        {option.pickerTitle}
+      </span>
+    ))}
   </h1>
   <ul class="picker-options">
-    {
-      options.map((option) => (
-        <li>
-          <a
-            class="picker-option"
-            href={option.path}
-            lang={option.code}
-            hreflang={option.code}
-            data-language-option
-            data-language={option.code}
-            data-path={option.path}
-          >
-            {option.name}
-          </a>
-        </li>
-      ))
-    }
+    {options.map((option) => (
+      <li>
+        <a
+          class="picker-option"
+          href={option.path}
+          lang={option.code}
+          hreflang={option.code}
+          data-language-option
+          data-language={option.code}
+          data-path={option.path}
+        >
+          {option.name}
+        </a>
+      </li>
+    ))}
   </ul>
 </main>
 

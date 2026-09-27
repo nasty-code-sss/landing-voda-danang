@@ -44,26 +44,19 @@ const drawnAreas = MAP_AREAS.map((mapArea) => ({ ...mapArea, served: areaById.ge
 
 <svg class="zone-map" viewBox="0 0 320 360" lang={areaLanguage} aria-hidden="true" focusable="false">
   <rect width="320" height="360" fill="#f3f7f4"></rect>
-  {
-    drawnAreas.map((area) => (
-      <path
-        d={area.outline}
-        class:list={['zone-area', { served: area.served !== undefined }]}
-      />
-    ))
-  }
+  {drawnAreas.map((area) => (
+    <path d={area.outline} class:list={['zone-area', { served: area.served !== undefined }]} />
+  ))}
   <path d={SEA_PATH} fill="#bfe3f5"></path>
   <path d={RIVER_PATH} fill="none" stroke="#bfe3f5" stroke-width="9" stroke-linecap="round"></path>
-  {
-    drawnAreas.map(
-      (area) =>
-        area.served !== undefined && (
-          <text x={area.label.x} y={area.label.y} text-anchor="middle" class="zone-label">
-            {area.served.name}
-          </text>
-        ),
-    )
-  }
+  {drawnAreas.map(
+    (area) =>
+      area.served !== undefined && (
+        <text x={area.label.x} y={area.label.y} text-anchor="middle" class="zone-label">
+          {area.served.name}
+        </text>
+      ),
+  )}
 </svg>
 
 <style>

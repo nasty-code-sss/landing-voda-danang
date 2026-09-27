@@ -10,8 +10,7 @@ import { fillTemplate } from '../../../../src/shared/i18n/template';
 import { projectDictionaries } from '../../../fixtures/site-config-fixture';
 
 const CYRILLIC = /[\u0400-\u04FF]/;
-const VIETNAMESE_LETTER =
-  /[ăâđêôơưàáạảãầấậẩẫằắặẳẵèéẹẻẽềếệểễìíịỉĩòóọỏõồốộổỗờớợởỡùúụủũừứựửữỳýỵỷỹ]/i;
+const VIETNAMESE_LETTER = /[ăâđêôơưàáạảãầấậẩẫằắặẳẵèéẹẻẽềếệểễìíịỉĩòóọỏõồốộổỗờớợởỡùúụủũừứựửữỳýỵỷỹ]/i;
 const VIETNAMESE_WORDS_ALLOWED_IN_RUSSIAN = new Set(['address.lane_word', 'zone.ward_word']);
 
 describe('findDictionaryProblems', () => {

@@ -28,12 +28,18 @@ const CALL_BLOCK = 'builder';
 
 <section class="builder" id={PAGE_ANCHOR.order} aria-labelledby="builder-title" data-order-builder>
   <h2 id="builder-title">{say('builder.title')}</h2>
-  <p class="builder-noscript" data-no-js-only>{say('builder.noscript')}</p>
+  <p class="builder-noscript" data-no-js-only>
+    {say('builder.noscript')}
+  </p>
 
   <div class="repeat" data-repeat data-requires-js hidden>
-    <button type="button" class="repeat-button" data-repeat-button>{say('builder.repeat.button')}</button>
+    <button type="button" class="repeat-button" data-repeat-button>
+      {say('builder.repeat.button')}
+    </button>
     <p class="repeat-summary" data-repeat-summary></p>
-    <button type="button" class="forget-button" data-repeat-forget>{say('builder.repeat.forget')}</button>
+    <button type="button" class="forget-button" data-repeat-forget>
+      {say('builder.repeat.forget')}
+    </button>
   </div>
 
   <form class="builder-form" data-requires-js data-builder-form novalidate>
@@ -56,20 +62,18 @@ const CALL_BLOCK = 'builder';
     <fieldset class="field">
       <legend>{say('builder.brand.legend')}</legend>
       <div class="choices">
-        {
-          data.brands.map((brand) => (
-            <label class="choice brand">
-              <input type="radio" name={BUILDER_FIELD.brand} value={brand.id} />
-              <span class="choice-title">{brand.name}</span>
-              <span class="choice-hint">
-                {say(`water.${brand.waterType}`)}, {formatVolume(brand.volumeLiters, language)} {say('message.liter_unit')}
-              </span>
-              {brand.hasTap && <span class="choice-hint">{say('builder.brand.tap')}</span>}
-              <span class="brand-price">{fillTemplate(say('builder.brand.per_bottle'), { amount: money(brand.price) })}</span>
-              <span class="choice-hint">{fillTemplate(say('builder.brand.deposit'), { amount: money(brand.deposit) })}</span>
-            </label>
-          ))
-        }
+        {data.brands.map((brand) => (
+          <label class="choice brand">
+            <input type="radio" name={BUILDER_FIELD.brand} value={brand.id} />
+            <span class="choice-title">{brand.name}</span>
+            <span class="choice-hint">
+              {say(`water.${brand.waterType}`)}, {formatVolume(brand.volumeLiters, language)} {say('message.liter_unit')}
+            </span>
+            {brand.hasTap && <span class="choice-hint">{say('builder.brand.tap')}</span>}
+            <span class="brand-price">{fillTemplate(say('builder.brand.per_bottle'), { amount: money(brand.price) })}</span>
+            <span class="choice-hint">{fillTemplate(say('builder.brand.deposit'), { amount: money(brand.deposit) })}</span>
+          </label>
+        ))}
       </div>
     </fieldset>
 
@@ -79,7 +83,9 @@ const CALL_BLOCK = 'builder';
         <button type="button" class="stepper-button" data-quantity-step="-1" aria-label={say('builder.quantity.decrease')}>
           <span aria-hidden="true">−</span>
         </button>
-        <output class="stepper-value" data-quantity-value aria-live="polite">{data.limits.minimum}</output>
+        <output class="stepper-value" data-quantity-value aria-live="polite">
+          {data.limits.minimum}
+        </output>
         <button type="button" class="stepper-button" data-quantity-step="1" aria-label={say('builder.quantity.increase')}>
           <span aria-hidden="true">+</span>
         </button>
@@ -94,24 +100,26 @@ const CALL_BLOCK = 'builder';
           <input type="radio" name={BUILDER_FIELD.pump} value={NO_PUMP_VALUE} checked />
           <span class="choice-title">{say('builder.pump.none')}</span>
         </label>
-        {
-          data.pumps.map((pump) => (
-            <label class="choice choice-inline">
-              <input type="radio" name={BUILDER_FIELD.pump} value={pump.id} />
-              <span class="choice-title">{say(`pump.${pump.id}`)}</span>
-              <span class="choice-hint">{money(pump.price)}</span>
-            </label>
-          ))
-        }
+        {data.pumps.map((pump) => (
+          <label class="choice choice-inline">
+            <input type="radio" name={BUILDER_FIELD.pump} value={pump.id} />
+            <span class="choice-title">{say(`pump.${pump.id}`)}</span>
+            <span class="choice-hint">{money(pump.price)}</span>
+          </label>
+        ))}
       </div>
       <p class="hint">{say('builder.pump.hint')}</p>
     </fieldset>
 
     <fieldset class="field">
       <legend>{say('builder.location.legend')}</legend>
-      <button type="button" class="secondary-button" data-geo-button>{say('builder.location.geo_button')}</button>
+      <button type="button" class="secondary-button" data-geo-button>
+        {say('builder.location.geo_button')}
+      </button>
       <p class="hint geo-status" data-geo-status role="status"></p>
-      <label class="input-label" for="builder-address">{say('builder.location.address_label')}</label>
+      <label class="input-label" for="builder-address">
+        {say('builder.location.address_label')}
+      </label>
       <input
         class="text-input"
         id="builder-address"
@@ -121,7 +129,11 @@ const CALL_BLOCK = 'builder';
         aria-describedby="builder-address-hint"
         data-address-input
       />
-      <p class="hint" id="builder-address-hint" set:html={fillTemplate(say('builder.location.address_hint'), { lane: laneWord })} />
+      <p
+        class="hint"
+        id="builder-address-hint"
+        set:html={fillTemplate(say('builder.location.address_hint'), { lane: laneWord })}
+      />
     </fieldset>
 
     <fieldset class="field">
@@ -142,14 +154,12 @@ const CALL_BLOCK = 'builder';
     <fieldset class="field">
       <legend>{say('builder.payment.legend')}</legend>
       <div class="choices choices-two">
-        {
-          data.payments.map((payment) => (
-            <label class="choice choice-inline">
-              <input type="radio" name={BUILDER_FIELD.payment} value={payment} checked={payment === firstPayment} />
-              <span class="choice-title">{say(`payment.${payment}`)}</span>
-            </label>
-          ))
-        }
+        {data.payments.map((payment) => (
+          <label class="choice choice-inline">
+            <input type="radio" name={BUILDER_FIELD.payment} value={payment} checked={payment === firstPayment} />
+            <span class="choice-title">{say(`payment.${payment}`)}</span>
+          </label>
+        ))}
       </div>
     </fieldset>
 
@@ -176,22 +186,22 @@ const CALL_BLOCK = 'builder';
           <dd data-total="total"></dd>
         </div>
       </dl>
-      <p class="hint" data-deposit-note>{say('builder.total.deposit_note')}</p>
+      <p class="hint" data-deposit-note>
+        {say('builder.total.deposit_note')}
+      </p>
     </div>
   </form>
 
   <div class="send">
     <h3 class="send-title">{say('builder.send.title')}</h3>
     <ul class="send-links">
-      {
-        data.messengers.map((messenger) => (
-          <li>
-            <a class="send-link" href={chatLink(messenger)} target="_blank" rel="noopener" data-send-link={messenger.id}>
-              {messenger.label}
-            </a>
-          </li>
-        ))
-      }
+      {data.messengers.map((messenger) => (
+        <li>
+          <a class="send-link" href={chatLink(messenger)} target="_blank" rel="noopener" data-send-link={messenger.id}>
+            {messenger.label}
+          </a>
+        </li>
+      ))}
       <li>
         <a
           class="call-link"

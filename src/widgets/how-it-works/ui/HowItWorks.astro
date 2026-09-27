@@ -33,18 +33,16 @@ const steps = [
 
 <PageSection anchor={PAGE_ANCHOR.howItWorks} title={say('how.title')} tone="tinted">
   <ol class="steps">
-    {
-      steps.map((step, index) => (
-        <li class="step">
-          <span class="step-badge" aria-hidden="true">
-            <Icon name={step.icon} size={28} />
-            <span class="step-number">{index + 1}</span>
-          </span>
-          <h3>{step.title}</h3>
-          <p>{step.text}</p>
-        </li>
-      ))
-    }
+    {steps.map((step, index) => (
+      <li class="step">
+        <span class="step-badge" aria-hidden="true">
+          <Icon name={step.icon} size={28} />
+          <span class="step-number">{index + 1}</span>
+        </span>
+        <h3>{step.title}</h3>
+        <p>{step.text}</p>
+      </li>
+    ))}
   </ol>
   <p class="refill-note">{say('how.refill')}</p>
 </PageSection>

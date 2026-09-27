@@ -4,6 +4,8 @@ import type { SiteConfig } from '../../../shared/config/site-config';
 import { dictionaryFor, text, type Dictionaries } from '../../../shared/i18n/dictionary';
 import { fillTemplate } from '../../../shared/i18n/template';
 import { formatMoney, formatVolume } from '../../../shared/i18n/number-format';
+import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
+import { PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
 import { createBuilderData } from '../model/builder-data';
 import { BUILDER_FIELD, NO_PUMP_VALUE } from '../model/builder-state';
 import { serializeBuilderData } from '../model/serialize-builder-data';
@@ -21,11 +23,18 @@ const data = createBuilderData(config, dictionaries, language);
 const money = (amount: number) => formatMoney(amount, language, data.currency);
 const laneWord = `<span lang="vi">${say('address.lane_word')}</span>`;
 const [firstPayment] = data.payments;
+const CALL_BLOCK = 'builder';
 ---
 
-<section class="builder" id="order" aria-labelledby="builder-title" data-order-builder>
+<section class="builder" id={PAGE_ANCHOR.order} aria-labelledby="builder-title" data-order-builder>
   <h2 id="builder-title">{say('builder.title')}</h2>
   <p class="builder-noscript" data-no-js-only>{say('builder.noscript')}</p>
+
+  <div class="repeat" data-repeat data-requires-js hidden>
+    <button type="button" class="repeat-button" data-repeat-button>{say('builder.repeat.button')}</button>
+    <p class="repeat-summary" data-repeat-summary></p>
+    <button type="button" class="forget-button" data-repeat-forget>{say('builder.repeat.forget')}</button>
+  </div>
 
   <form class="builder-form" data-requires-js data-builder-form novalidate>
     <fieldset class="field">
@@ -184,7 +193,14 @@ const [firstPayment] = data.payments;
         ))
       }
       <li>
-        <a class="call-link" href={phoneCallLink(config.contacts.phone)}>{say('builder.send.call')}</a>
+        <a
+          class="call-link"
+          href={phoneCallLink(config.contacts.phone)}
+          data-analytics-click={ANALYTICS_EVENT.callClick}
+          data-analytics-param-block={CALL_BLOCK}
+        >
+          {say('builder.send.call')}
+        </a>
       </li>
     </ul>
     <div class="missing" data-missing data-requires-js>
@@ -215,6 +231,47 @@ const [firstPayment] = data.payments;
     max-width: var(--content-width);
     margin: 0 auto;
     padding: 24px var(--gap) 48px;
+  }
+
+  .repeat {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 4px 12px;
+    padding: var(--gap);
+    border-radius: var(--radius);
+    background: var(--color-selected);
+    border: 2px solid var(--color-sea);
+  }
+
+  .repeat-button {
+    grid-column: 1 / -1;
+    min-height: var(--touch-target);
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-sea);
+    color: var(--color-surface);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .repeat-summary {
+    margin: 0;
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .forget-button {
+    min-height: var(--touch-target);
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: var(--color-sea-dark);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
   }
 
   .builder-form {

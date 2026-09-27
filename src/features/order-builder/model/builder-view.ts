@@ -38,6 +38,7 @@ export interface BuilderView {
   readonly atMaximum: boolean;
   readonly quantityHint: string;
   readonly total: FormattedTotal | null;
+  readonly totalAmount: number | null;
   readonly missing: readonly string[];
   readonly ready: boolean;
   readonly message: string;
@@ -107,6 +108,7 @@ export function buildBuilderView(state: BuilderState, data: BuilderData, now: Da
     atMaximum: state.quantity >= data.limits.maximum,
     quantityHint: quantityHint(state, data),
     total: order === null ? null : formatTotal(order, data),
+    totalAmount: order === null ? null : calculateTotal(order).total,
     missing: missingParts.map((part) => data.texts.missing[part]),
     ready,
     message,

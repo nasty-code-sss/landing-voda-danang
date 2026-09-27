@@ -1,10 +1,8 @@
+import { scriptJson } from '../../../shared/lib/script-json';
 import type { BuilderData } from './builder-data';
 
-const HTML_OPENING_BRACKET = /</g;
-const ESCAPED_OPENING_BRACKET = '\\u003c';
-
 export function serializeBuilderData(data: BuilderData): string {
-  return JSON.stringify(data).replace(HTML_OPENING_BRACKET, ESCAPED_OPENING_BRACKET);
+  return scriptJson(data);
 }
 
 export function parseBuilderData(serialized: string): BuilderData {

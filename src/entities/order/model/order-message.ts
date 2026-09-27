@@ -84,11 +84,15 @@ function describeOrder(request: OrderMessageRequest, part: MessageLanguage, with
   return lines.join(LINE_BREAK);
 }
 
-export function composeOrderMessage(request: OrderMessageRequest): string {
-  const primary = describeOrder(request, request.primary, true);
-  if (request.copy === null) {
+export function withOperatorCopy(primary: string, copy: string | null): string {
+  if (copy === null) {
     return primary;
   }
-  const copy = describeOrder(request, request.copy, false);
   return [primary, `${COPY_SEPARATOR}${LINE_BREAK}${copy}`].join(PARAGRAPH_BREAK);
+}
+
+export function composeOrderMessage(request: OrderMessageRequest): string {
+  const primary = describeOrder(request, request.primary, true);
+  const copy = request.copy === null ? null : describeOrder(request, request.copy, false);
+  return withOperatorCopy(primary, copy);
 }

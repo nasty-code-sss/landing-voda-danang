@@ -1,0 +1,98 @@
+---
+import type { Translate } from '../../../shared/i18n/dictionary';
+import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
+import { anchorHref, PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
+
+interface Props {
+  say: Translate;
+}
+
+const { say } = Astro.props;
+const CTA_BLOCK = 'bar';
+---
+
+<div class="order-bar" data-order-bar>
+  <a
+    class="order-bar-link"
+    href={anchorHref(PAGE_ANCHOR.order)}
+    data-analytics-click={ANALYTICS_EVENT.ctaClick}
+    data-analytics-param-block={CTA_BLOCK}
+  >
+    <span>{say('bar.order')}</span>
+    <span class="order-bar-total" data-order-bar-total></span>
+  </a>
+</div>
+
+<script>
+  import { mountOrderBar } from './mount-order-bar';
+
+  const bar = document.querySelector<HTMLElement>('[data-order-bar]');
+  if (bar !== null) {
+    mountOrderBar(bar);
+  }
+</script>
+
+<style>
+  .order-bar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 20;
+    padding: 8px var(--gap) calc(8px + env(safe-area-inset-bottom));
+    background: rgb(255 255 255 / 96%);
+    border-top: 1px solid var(--color-line);
+    box-shadow: 0 -6px 18px rgb(15 42 58 / 10%);
+    transition: transform 0.2s ease;
+  }
+
+  .order-bar[data-covered] {
+    transform: translateY(110%);
+  }
+
+  .order-bar-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 48px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: var(--color-sea);
+    color: var(--color-surface);
+    font-weight: 800;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .order-bar-total {
+    padding-left: 12px;
+    border-left: 1px solid rgb(255 255 255 / 45%);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .order-bar-total:empty {
+    display: none;
+  }
+
+  :global(body) {
+    padding-bottom: 72px;
+  }
+
+  @media (min-width: 600px) {
+    .order-bar {
+      display: none;
+    }
+
+    :global(body) {
+      padding-bottom: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .order-bar {
+      transition: none;
+    }
+  }
+</style>

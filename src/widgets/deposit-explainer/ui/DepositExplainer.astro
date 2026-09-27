@@ -1,0 +1,207 @@
+---
+import { depositExample } from '../../../entities/order/model/deposit-example';
+import { BOTTLES_PREFIX, brandsFromConfig } from '../../../features/order-builder/model/builder-data';
+import type { SiteConfig } from '../../../shared/config/site-config';
+import type { Translate } from '../../../shared/i18n/dictionary';
+import { formatMoney, formatVolume } from '../../../shared/i18n/number-format';
+import { countWithNoun, pluralFormsOf } from '../../../shared/i18n/plural';
+import { fillTemplate } from '../../../shared/i18n/template';
+import { PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
+import PageSection from '../../../shared/ui/PageSection.astro';
+
+interface Props {
+  config: SiteConfig;
+  say: Translate;
+  language: string;
+}
+
+const { config, say, language } = Astro.props;
+const example = depositExample(brandsFromConfig(config), {
+  minimum: config.order.minQuantity,
+  maximum: config.order.maxQuantity,
+});
+const money = (amount: number) => formatMoney(amount, language, config.money.currency);
+const bottles = countWithNoun(example.quantity, language, pluralFormsOf(say, BOTTLES_PREFIX));
+const exampleName = fillTemplate(say('deposit.example.caption'), {
+  brand: `${example.brand.name} ${formatVolume(example.brand.volumeLiters, language)} ${say('message.liter_unit')}`,
+  bottles,
+});
+const MULTIPLICATION_SIGN = '×';
+const multiply = (amount: number) => `${example.quantity} ${MULTIPLICATION_SIGN} ${money(amount)}`;
+const columns = [
+  { title: say('deposit.example.first'), total: example.firstOrder, withDeposit: true },
+  { title: say('deposit.example.next'), total: example.nextOrder, withDeposit: false },
+];
+const theses = [say('deposit.thesis.1'), say('deposit.thesis.2'), say('deposit.thesis.3')];
+---
+
+<PageSection anchor={PAGE_ANCHOR.deposit} title={say('deposit.title')} intro={say('deposit.intro')}>
+  <div class="deposit">
+    <ol class="theses">{theses.map((thesis) => <li>{thesis}</li>)}</ol>
+    <figure class="example">
+      <figcaption>{exampleName}</figcaption>
+      <div class="example-columns">
+        {
+          columns.map((column) => (
+            <div class:list={['example-column', { featured: column.withDeposit }]}>
+              <h3>{column.title}</h3>
+              <dl>
+                <div class="example-row">
+                  <dt>{say('deposit.example.water')}</dt>
+                  <dd>
+                    <span class="example-math">{multiply(example.brand.price)}</span>
+                    <span>{money(column.total.water)}</span>
+                  </dd>
+                </div>
+                <div class="example-row">
+                  <dt>{say('deposit.example.deposit')}</dt>
+                  <dd>
+                    {column.withDeposit ? (
+                      <>
+                        <span class="example-math">{multiply(example.brand.deposit)}</span>
+                        <span>{money(column.total.deposit)}</span>
+                      </>
+                    ) : (
+                      <span>{say('deposit.example.no_deposit')}</span>
+                    )}
+                  </dd>
+                </div>
+                <div class="example-row example-total">
+                  <dt>{say('deposit.example.total')}</dt>
+                  <dd>{money(column.total.total)}</dd>
+                </div>
+              </dl>
+            </div>
+          ))
+        }
+      </div>
+    </figure>
+    <p class="brand-note">{say('deposit.same_brand')}</p>
+  </div>
+</PageSection>
+
+<style>
+  .deposit {
+    display: grid;
+    gap: 24px;
+  }
+
+  .theses {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: thesis;
+  }
+
+  .theses li {
+    position: relative;
+    padding-left: 44px;
+    font-size: 1.0625rem;
+    counter-increment: thesis;
+  }
+
+  .theses li::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--color-selected);
+    color: var(--color-sea-dark);
+    font-weight: 800;
+    content: counter(thesis);
+  }
+
+  .example {
+    margin: 0;
+  }
+
+  figcaption {
+    margin-bottom: 12px;
+    color: var(--color-muted);
+    font-weight: 600;
+  }
+
+  .example-columns {
+    display: grid;
+    gap: 12px;
+  }
+
+  .example-column {
+    padding: 20px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  .example-column.featured {
+    border: 2px solid var(--color-sea);
+  }
+
+  h3 {
+    font-size: 1.125rem;
+  }
+
+  dl {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+  }
+
+  .example-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 12px;
+  }
+
+  dd {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px 12px;
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .example-math {
+    color: var(--color-muted);
+  }
+
+  .example-total {
+    padding-top: 8px;
+    border-top: 1px solid var(--color-line);
+    font-size: 1.25rem;
+    font-weight: 800;
+  }
+
+  .brand-note {
+    margin: 0;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: var(--color-warning-surface);
+    color: var(--color-warning-ink);
+    font-weight: 600;
+  }
+
+  @media (min-width: 760px) {
+    .deposit {
+      grid-template-columns: 1fr 1.4fr;
+      align-items: start;
+    }
+
+    .example-columns {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .brand-note {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

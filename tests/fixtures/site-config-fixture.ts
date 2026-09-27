@@ -7,12 +7,29 @@ export function rawConfigFixture() {
   return {
     brand: { name: 'Mỹ Water', slug: 'my-water' },
     site: { url: 'http://localhost:4321', base: '/landing-voda-danang', noindex: true, demo: true },
-    languages: { default: 'en', supported: ['en', 'vi', 'ru'], message_copy: 'vi' },
+    languages: { default: 'en', supported: ['en', 'vi', 'ru'], message_copy: 'vi', local: 'vi' },
     money: { currency: 'VND' },
     time: { zone: 'Asia/Ho_Chi_Minh' },
     contacts: { phone: '+84000000000', whatsapp: '84000000000', telegram: 'mywater_danang_demo', zalo: '0000000000' },
+    warehouse: { street: 'Địa chỉ mẫu, phường Ngũ Hành Sơn', city: 'Đà Nẵng', country: 'VN' },
+    owner: {
+      name: 'Hộ kinh doanh Mỹ Water (dữ liệu mẫu)',
+      address: 'Địa chỉ mẫu, phường Ngũ Hành Sơn, thành phố Đà Nẵng',
+      registration_number: '0000000000 (mẫu)',
+    },
     order: { min_quantity: 3, max_quantity: 20, coordinate_decimals: 5 },
-    delivery: { same_day_until: '14:00', opens_at: '08:00', closes_at: '18:00' },
+    delivery: {
+      same_day_until: '14:00',
+      opens_at: '08:00',
+      closes_at: '18:00',
+      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+    },
+    zone: [
+      { id: 'ngu-hanh-son', name: 'Ngũ Hành Sơn', former: ['Mỹ An', 'Khuê Mỹ', 'Hòa Hải', 'Hòa Quý'] },
+      { id: 'an-hai', name: 'An Hải', former: ['Phước Mỹ', 'An Hải Bắc', 'An Hải Nam'] },
+      { id: 'hai-chau', name: 'Hải Châu', former: [] },
+    ],
+    trust: { sealed_bottles: true, washed_bottles: true, official_dealer: true, photo_before_delivery: true },
     brands: [
       { id: 'biwa', name: 'Biwa', water: 'purified', volume_liters: 21.5, price: 50000, deposit: 50000, tap: false, example: true },
       { id: 'sunrise', name: 'Sunrise', water: 'purified', volume_liters: 20, price: 50000, deposit: 45000, tap: false, example: false },
@@ -30,7 +47,18 @@ export function rawConfigFixture() {
     },
     maps: { search_url: 'https://www.google.com/maps/search/?api=1&query=' },
     geolocation: { timeout_ms: 15000, maximum_age_ms: 60000 },
-    browser_storage: { language_key: 'my-water.language' },
+    browser_storage: { language_key: 'my-water.language', last_order_key: 'my-water.last-order' },
+    analytics: { queue_name: 'dataLayer' },
+    design: {
+      font: {
+        package: '@fontsource-variable/manrope',
+        family: 'Manrope Variable',
+        weights: '200 800',
+        subsets: ['latin', 'latin-ext', 'vietnamese', 'cyrillic'],
+        preload: { en: ['latin'], vi: ['latin', 'vietnamese'], ru: ['latin', 'cyrillic'] },
+      },
+      share_image: { font_package: '@fontsource/manrope', font_weights: [600, 800], width: 1200, height: 630 },
+    },
   };
 }
 

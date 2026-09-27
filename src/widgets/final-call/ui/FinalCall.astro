@@ -1,0 +1,74 @@
+---
+import type { SiteConfig } from '../../../shared/config/site-config';
+import type { Translate } from '../../../shared/i18n/dictionary';
+import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
+import { anchorHref, PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
+
+interface Props {
+  config: SiteConfig;
+  say: Translate;
+  language: string;
+}
+
+const { config, say, language } = Astro.props;
+const CTA_BLOCK = 'final';
+const messengers = (config.messengers.order[language] ?? []).map((id) => ({ id, label: say(`messenger.${id}`) }));
+---
+
+<section class="final-call" aria-labelledby="final-call-title">
+  <div class="final-call-inner">
+    <h2 id="final-call-title">{say('final.title')}</h2>
+    <p>{say('final.text')}</p>
+    <ul class="final-call-links">
+      {
+        messengers.map((messenger) => (
+          <li>
+            <a
+              class="button button-inverse"
+              href={anchorHref(PAGE_ANCHOR.order)}
+              data-analytics-click={ANALYTICS_EVENT.ctaClick}
+              data-analytics-param-block={CTA_BLOCK}
+              data-analytics-param-messenger={messenger.id}
+            >
+              {messenger.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .final-call {
+    background: var(--color-sea-dark);
+    color: var(--color-surface);
+  }
+
+  .final-call-inner {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    padding: 48px var(--gap);
+    text-align: center;
+  }
+
+  h2 {
+    font-size: clamp(1.625rem, 1.3rem + 1.4vw, 2.25rem);
+  }
+
+  p {
+    margin: 0 auto 24px;
+    max-width: 48ch;
+    font-size: 1.0625rem;
+  }
+
+  .final-call-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

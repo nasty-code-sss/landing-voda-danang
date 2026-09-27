@@ -1,21 +1,16 @@
 ---
 import BaseLayout from '../app/layouts/BaseLayout.astro';
+import { pageMeta } from '../app/layouts/page-meta';
 import { languageOptions } from '../features/language-switch/model/language-options';
 import LanguagePicker from '../features/language-switch/ui/LanguagePicker.astro';
 import { settings } from '../shared/config/current-settings';
-import { dictionaryFor, text } from '../shared/i18n/dictionary';
-import { fillTemplate } from '../shared/i18n/template';
+import { SITE_ROUTE } from '../shared/lib/site-route';
 
 const { config, dictionaries } = settings;
-const defaultDictionary = dictionaryFor(dictionaries, config.languages.default);
+const meta = pageMeta(settings, config.languages.default, SITE_ROUTE.home, true);
 ---
 
-<BaseLayout
-  lang={config.languages.default}
-  title={fillTemplate(text(defaultDictionary, 'meta.title'), { brand: config.brand.name })}
-  description={text(defaultDictionary, 'meta.description')}
-  noindex={config.site.noindex}
->
+<BaseLayout meta={meta}>
   <LanguagePicker
     brandName={config.brand.name}
     options={languageOptions(config, dictionaries)}

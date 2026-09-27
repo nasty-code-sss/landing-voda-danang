@@ -1,0 +1,130 @@
+---
+import { brandsFromConfig } from '../../../features/order-builder/model/builder-data';
+import type { SiteConfig } from '../../../shared/config/site-config';
+import type { Translate } from '../../../shared/i18n/dictionary';
+import { formatMoney, formatVolume } from '../../../shared/i18n/number-format';
+import { fillTemplate } from '../../../shared/i18n/template';
+import { anchorHref, PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
+import Icon from '../../../shared/ui/Icon.astro';
+import PageSection from '../../../shared/ui/PageSection.astro';
+
+interface Props {
+  config: SiteConfig;
+  say: Translate;
+  language: string;
+}
+
+const { config, say, language } = Astro.props;
+const money = (amount: number) => formatMoney(amount, language, config.money.currency);
+const brands = brandsFromConfig(config);
+---
+
+<PageSection anchor={PAGE_ANCHOR.prices} title={say('prices.title')} intro={say('prices.intro')} tone="tinted">
+  <ul class="price-cards">
+    {
+      brands.map((brand) => (
+        <li class="price-card">
+          <h3 class="price-card-name">{brand.name}</h3>
+          <p class="price-card-type">
+            {say(`water.${brand.waterType}`)}, {formatVolume(brand.volumeLiters, language)} {say('message.liter_unit')}
+          </p>
+          <p class="price-card-price">{fillTemplate(say('prices.per_bottle'), { amount: money(brand.price) })}</p>
+          <dl class="price-card-facts">
+            <div>
+              <dt>{say('prices.deposit')}</dt>
+              <dd>{money(brand.deposit)}</dd>
+            </div>
+            <div>
+              <dt>{say('prices.tap')}</dt>
+              <dd>{brand.hasTap ? say('prices.tap.yes') : say('prices.tap.no')}</dd>
+            </div>
+          </dl>
+          <a
+            class="button button-primary price-card-choose"
+            href={anchorHref(PAGE_ANCHOR.order)}
+            aria-label={fillTemplate(say('prices.choose_brand'), { brand: brand.name })}
+            data-choose-brand={brand.id}
+          >
+            <Icon name="check" />
+            {say('prices.choose')}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</PageSection>
+
+<script>
+  import { bindChooseButtons } from './bind-choose-buttons';
+
+  bindChooseButtons(document);
+</script>
+
+<style>
+  .price-cards {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .price-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    background: var(--color-foam);
+  }
+
+  .price-card-name {
+    margin: 0;
+    font-size: 1.375rem;
+  }
+
+  .price-card-type {
+    margin: 0;
+    color: var(--color-muted);
+  }
+
+  .price-card-price {
+    margin: 4px 0;
+    color: var(--color-sea-dark);
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+
+  .price-card-facts {
+    display: grid;
+    gap: 4px;
+    margin: 0 0 12px;
+  }
+
+  .price-card-facts div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .price-card-facts dt {
+    color: var(--color-muted);
+  }
+
+  .price-card-facts dd {
+    margin: 0;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .price-card-choose {
+    margin-top: auto;
+  }
+
+  @media (min-width: 760px) {
+    .price-cards {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+  }
+</style>

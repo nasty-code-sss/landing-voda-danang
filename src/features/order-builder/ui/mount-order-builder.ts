@@ -1,7 +1,12 @@
+import { findBrand } from '../../../entities/brand/model/brand';
 import { clampQuantity } from '../../../entities/order/model/order';
+import { trackEvent } from '../../../shared/api/analytics-queue';
+import { forgetStoredValue, readStoredValue, storeValue } from '../../../shared/api/browser-storage';
 import { copyText } from '../../../shared/api/clipboard';
 import { requestCurrentPoint } from '../../../shared/api/geolocation';
+import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
 import type { BuilderData } from '../model/builder-data';
+import { chooseBrandDetail, ORDER_BUILDER_EVENT, type OrderSummaryDetail } from '../model/builder-events';
 import {
   applyDeliveryCutoff,
   BUILDER_FIELD,
@@ -11,6 +16,14 @@ import {
   type BuilderState,
 } from '../model/builder-state';
 import { buildBuilderView, type BuilderView } from '../model/builder-view';
+import {
+  describeLastOrder,
+  lastOrderOf,
+  parseLastOrder,
+  repeatLastOrder,
+  serializeLastOrder,
+  type LastOrder,
+} from '../model/last-order';
 import { parseBuilderData } from '../model/serialize-builder-data';
 
 type GeoStatus = 'idle' | 'pending' | 'ok' | 'failed';
@@ -38,6 +51,10 @@ interface BuilderElements {
   readonly missingList: HTMLElement;
   readonly sendStatus: HTMLElement;
   readonly preview: HTMLElement;
+  readonly repeat: HTMLElement;
+  readonly repeatButton: HTMLButtonElement;
+  readonly repeatSummary: HTMLElement;
+  readonly forgetButton: HTMLButtonElement;
 }
 
 function requireElement<T extends Element>(root: ParentNode, selector: string): T {
@@ -77,6 +94,10 @@ function findElements(root: HTMLElement): BuilderElements {
     missingList: requireElement(root, '[data-missing-list]'),
     sendStatus: requireElement(root, '[data-send-status]'),
     preview: requireElement(root, '[data-message-preview]'),
+    repeat: requireElement(root, '[data-repeat]'),
+    repeatButton: requireElement(root, '[data-repeat-button]'),
+    repeatSummary: requireElement(root, '[data-repeat-summary]'),
+    forgetButton: requireElement(root, '[data-repeat-forget]'),
   };
 }
 
@@ -147,6 +168,13 @@ function applyView(elements: BuilderElements, state: BuilderState, view: Builder
   applySending(elements, view, data);
 }
 
+function announceSummary(root: HTMLElement, view: BuilderView): void {
+  const total = view.total?.total ?? null;
+  root.dataset.orderTotal = total ?? '';
+  const detail: OrderSummaryDetail = { total };
+  root.dispatchEvent(new CustomEvent(ORDER_BUILDER_EVENT.summary, { bubbles: true, detail }));
+}
+
 function syncAddressBar(state: BuilderState, data: BuilderData): void {
   const query = writeBuilderQuery(state, data, new URLSearchParams(window.location.search)).toString();
   const search = query.length > 0 ? `?${query}` : '';
@@ -170,6 +198,10 @@ function patchFromRadio(input: HTMLInputElement, state: BuilderState, data: Buil
   }
 }
 
+function readLastOrder(data: BuilderData): LastOrder | null {
+  return parseLastOrder(readStoredValue(data.lastOrderKey), data);
+}
+
 export function mountOrderBuilder(root: HTMLElement): void {
   const data = parseBuilderData(requireElement(root, '[data-builder-data]').textContent ?? '');
   const elements = findElements(root);
@@ -178,7 +210,9 @@ export function mountOrderBuilder(root: HTMLElement): void {
     address: elements.addressInput.value,
   };
   let geoStatus: GeoStatus = 'idle';
+  let started = false;
   let view: BuilderView;
+  const lastOrder = readLastOrder(data);
 
   const render = () => {
     const now = new Date();
@@ -187,6 +221,7 @@ export function mountOrderBuilder(root: HTMLElement): void {
     applyView(elements, state, view, data);
     elements.geoStatus.textContent = geoStatusText(geoStatus, data);
     syncAddressBar(state, data);
+    announceSummary(root, view);
   };
 
   const update = (patch: Partial<BuilderState>) => {
@@ -194,11 +229,31 @@ export function mountOrderBuilder(root: HTMLElement): void {
     render();
   };
 
+  const markStarted = (patch: Partial<BuilderState> = {}) => {
+    if (!started) {
+      started = true;
+      trackEvent(ANALYTICS_EVENT.builderStart, { mode: patch.mode ?? state.mode });
+    }
+  };
+
+  const chooseBrand = (brandId: string) => {
+    const brand = findBrand(data.brands, brandId);
+    if (brand === null) {
+      return;
+    }
+    markStarted();
+    update({ brandId: brand.id });
+    trackEvent(ANALYTICS_EVENT.builderBrand, { brand: brand.id });
+  };
+
   const locate = async () => {
+    markStarted();
+    trackEvent(ANALYTICS_EVENT.geoRequest);
     geoStatus = 'pending';
     render();
     const point = await requestCurrentPoint(data.geolocation);
     geoStatus = point === null ? 'failed' : 'ok';
+    trackEvent(point === null ? ANALYTICS_EVENT.geoDenied : ANALYTICS_EVENT.geoOk);
     update({ coordinates: point ?? state.coordinates });
     if (point === null) {
       elements.addressInput.focus();
@@ -210,18 +265,70 @@ export function mountOrderBuilder(root: HTMLElement): void {
     elements.sendStatus.textContent = `${copyNote} ${data.texts.platePhoto}`;
   };
 
+  const rememberOrder = () => {
+    const order = lastOrderOf(state);
+    if (order !== null) {
+      storeValue(data.lastOrderKey, serializeLastOrder(order));
+    }
+  };
+
+  const send = (link: HTMLAnchorElement) => {
+    trackEvent(ANALYTICS_EVENT.sendClick, {
+      messenger: link.dataset.sendLink ?? null,
+      brand: state.brandId,
+      quantity: state.quantity,
+      mode: state.mode,
+      total: view.totalAmount,
+    });
+    rememberOrder();
+    copyText(view.message)
+      .then(showSendStatus)
+      .catch(() => showSendStatus(false));
+  };
+
+  const offerRepeat = (order: LastOrder) => {
+    elements.repeat.hidden = false;
+    elements.repeatSummary.textContent = describeLastOrder(order, data);
+    elements.repeatButton.addEventListener('click', () => {
+      markStarted({ mode: 'refill' });
+      trackEvent(ANALYTICS_EVENT.repeatClick);
+      elements.addressInput.value = order.address;
+      geoStatus = order.coordinates === null ? 'idle' : 'ok';
+      state = repeatLastOrder(state, order);
+      render();
+    });
+    elements.forgetButton.addEventListener('click', () => {
+      forgetStoredValue(data.lastOrderKey);
+      elements.repeat.hidden = true;
+    });
+  };
+
   elements.form.addEventListener('submit', (event) => event.preventDefault());
   elements.form.addEventListener('change', (event) => {
-    if (event.target instanceof HTMLInputElement && event.target.type === 'radio') {
-      update(patchFromRadio(event.target, state, data));
+    if (!(event.target instanceof HTMLInputElement) || event.target.type !== 'radio') {
+      return;
     }
+    if (event.target.name === BUILDER_FIELD.brand) {
+      chooseBrand(event.target.value);
+      return;
+    }
+    const patch = patchFromRadio(event.target, state, data);
+    markStarted(patch);
+    update(patch);
   });
-  elements.addressInput.addEventListener('input', () => update({ address: elements.addressInput.value }));
+  elements.addressInput.addEventListener('input', () => {
+    markStarted();
+    update({ address: elements.addressInput.value });
+  });
   for (const [button, step] of [
     [elements.decrease, -1],
     [elements.increase, 1],
   ] as const) {
-    button.addEventListener('click', () => update({ quantity: clampQuantity(state.quantity + step, data.limits) }));
+    button.addEventListener('click', () => {
+      markStarted();
+      update({ quantity: clampQuantity(state.quantity + step, data.limits) });
+      trackEvent(ANALYTICS_EVENT.builderQuantity, { quantity: state.quantity });
+    });
   }
   elements.geoButton.addEventListener('click', () => void locate());
   for (const link of elements.sendLinks) {
@@ -230,10 +337,17 @@ export function mountOrderBuilder(root: HTMLElement): void {
         event.preventDefault();
         return;
       }
-      copyText(view.message)
-        .then(showSendStatus)
-        .catch(() => showSendStatus(false));
+      send(link);
     });
+  }
+  document.addEventListener(ORDER_BUILDER_EVENT.chooseBrand, (event) => {
+    const detail = chooseBrandDetail(event);
+    if (detail !== null) {
+      chooseBrand(detail.brandId);
+    }
+  });
+  if (lastOrder !== null) {
+    offerRepeat(lastOrder);
   }
 
   render();

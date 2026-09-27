@@ -45,4 +45,40 @@ describe('parseSiteConfig', () => {
 
     expect(() => parseSiteConfig({ ...raw, time: { zone: 'Mars/Olympus' } })).toThrow(/not a known time zone/);
   });
+
+  it('parseSiteConfig_withValidConfig_mapsNewSectionsToCamelCase', () => {
+    const config = parseSiteConfig(rawConfigFixture());
+
+    expect(config.owner.registrationNumber).toBe('0000000000 (mẫu)');
+    expect(config.trust.photoBeforeDelivery).toBe(true);
+    expect(config.browserStorage.lastOrderKey).toBe('my-water.last-order');
+    expect(config.design.shareImage.fontWeights).toEqual([600, 800]);
+    expect(config.languages.local).toBe('vi');
+  });
+
+  it('parseSiteConfig_withPreloadSubsetOutsideFontSubsets_throws', () => {
+    const raw = rawConfigFixture();
+    const font = { ...raw.design.font, preload: { ...raw.design.font.preload, ru: ['greek'] } };
+
+    expect(() => parseSiteConfig({ ...raw, design: { ...raw.design, font } })).toThrow(/design\.font\.preload\.ru names subsets/);
+  });
+
+  it('parseSiteConfig_withRepeatedZoneId_throws', () => {
+    const raw = rawConfigFixture();
+    const [first] = raw.zone;
+
+    expect(() => parseSiteConfig({ ...raw, zone: [...raw.zone, first] })).toThrow(/zone repeats id ngu-hanh-son/);
+  });
+
+  it('parseSiteConfig_withUnknownWeekday_throwsNamingTheField', () => {
+    const raw = rawConfigFixture();
+
+    expect(() => parseSiteConfig({ ...raw, delivery: { ...raw.delivery, days: ['funday'] } })).toThrow(/delivery\.days/);
+  });
+
+  it('parseSiteConfig_withQueueNameThatIsNotIdentifier_throws', () => {
+    const raw = rawConfigFixture();
+
+    expect(() => parseSiteConfig({ ...raw, analytics: { queue_name: 'data-layer' } })).toThrow(/analytics\.queue_name/);
+  });
 });

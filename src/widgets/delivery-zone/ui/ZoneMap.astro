@@ -1,0 +1,97 @@
+---
+import type { ZoneArea } from '../../../shared/config/site-config';
+
+interface Props {
+  areas: readonly ZoneArea[];
+  areaLanguage: string;
+}
+
+const { areas, areaLanguage } = Astro.props;
+const SEA_PATH =
+  'M0 0 H320 V360 H274 L266 310 L258 260 L250 210 L244 160 L246 128 L250 116 L274 108 L304 94 L316 66 L304 42 L266 34 L230 46 L204 68 L186 84 L168 86 L120 74 L60 78 L0 70 Z';
+const RIVER_PATH = 'M170 86 C174 110 166 140 170 165 C174 190 166 220 164 250 C162 280 156 320 150 360';
+const MAP_AREAS = [
+  {
+    id: 'hai-chau',
+    outline: 'M36 76 L60 78 L120 74 L168 86 L172 120 L168 160 L170 190 L36 190 Z',
+    label: { x: 102, y: 138 },
+  },
+  {
+    id: 'hoa-cuong',
+    outline: 'M36 190 L170 190 L170 205 L166 240 L162 280 L158 310 L36 310 Z',
+    label: { x: 102, y: 252 },
+  },
+  {
+    id: 'son-tra',
+    outline:
+      'M172 88 L186 84 L204 68 L230 46 L266 34 L304 42 L316 66 L304 94 L274 108 L250 116 L246 128 L244 160 L172 160 L174 120 Z',
+    label: { x: 262, y: 74 },
+  },
+  {
+    id: 'an-hai',
+    outline: 'M172 160 L244 160 L250 210 L172 210 Z',
+    label: { x: 210, y: 190 },
+  },
+  {
+    id: 'ngu-hanh-son',
+    outline: 'M172 210 L250 210 L258 260 L266 310 L158 310 L162 280 L166 240 Z',
+    label: { x: 212, y: 266 },
+  },
+] as const;
+const areaById = new Map(areas.map((area) => [area.id, area]));
+const drawnAreas = MAP_AREAS.map((mapArea) => ({ ...mapArea, served: areaById.get(mapArea.id) }));
+---
+
+<svg class="zone-map" viewBox="0 0 320 360" lang={areaLanguage} aria-hidden="true" focusable="false">
+  <rect width="320" height="360" fill="#f3f7f4"></rect>
+  {
+    drawnAreas.map((area) => (
+      <path
+        d={area.outline}
+        class:list={['zone-area', { served: area.served !== undefined }]}
+      />
+    ))
+  }
+  <path d={SEA_PATH} fill="#bfe3f5"></path>
+  <path d={RIVER_PATH} fill="none" stroke="#bfe3f5" stroke-width="9" stroke-linecap="round"></path>
+  {
+    drawnAreas.map(
+      (area) =>
+        area.served !== undefined && (
+          <text x={area.label.x} y={area.label.y} text-anchor="middle" class="zone-label">
+            {area.served.name}
+          </text>
+        ),
+    )
+  }
+</svg>
+
+<style>
+  .zone-map {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-line);
+  }
+
+  .zone-area {
+    fill: #e7eee9;
+    stroke: #ffffff;
+    stroke-width: 2;
+  }
+
+  .zone-area.served {
+    fill: #8fcbe9;
+  }
+
+  .zone-label {
+    fill: var(--color-ink);
+    font-size: 12.5px;
+    font-weight: 800;
+    paint-order: stroke;
+    stroke: #ffffff;
+    stroke-width: 3px;
+    stroke-linejoin: round;
+  }
+</style>

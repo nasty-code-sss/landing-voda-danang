@@ -18,3 +18,12 @@ export function countWithNoun(count: number, language: string, forms: PluralForm
   const template = isKnownCategory(category) ? forms[category] : forms.other;
   return fillTemplate(template, { count });
 }
+
+export function pluralFormsOf(say: (key: string) => string, prefix: string): PluralForms {
+  return {
+    one: say(`${prefix}.one`),
+    few: say(`${prefix}.few`),
+    many: say(`${prefix}.many`),
+    other: say(`${prefix}.other`),
+  };
+}

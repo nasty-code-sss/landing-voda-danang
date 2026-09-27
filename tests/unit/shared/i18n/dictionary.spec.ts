@@ -12,7 +12,7 @@ import { projectDictionaries } from '../../../fixtures/site-config-fixture';
 const CYRILLIC = /[\u0400-\u04FF]/;
 const VIETNAMESE_LETTER =
   /[ăâđêôơưàáạảãầấậẩẫằắặẳẵèéẹẻẽềếệểễìíịỉĩòóọỏõồốộổỗờớợởỡùúụủũừứựửữỳýỵỷỹ]/i;
-const VIETNAMESE_WORDS_ALLOWED_IN_RUSSIAN = new Set(['address.lane_word']);
+const VIETNAMESE_WORDS_ALLOWED_IN_RUSSIAN = new Set(['address.lane_word', 'zone.ward_word']);
 
 describe('findDictionaryProblems', () => {
   it('findDictionaryProblems_withKeyMissingInOneLanguage_namesKeyAndLanguage', () => {

@@ -24,3 +24,15 @@ export function storeValue(key: string, value: string): boolean {
     throw error;
   }
 }
+
+export function forgetStoredValue(key: string): boolean {
+  try {
+    window.localStorage.removeItem(key);
+    return true;
+  } catch (error) {
+    if (isStorageUnavailable(error)) {
+      return false;
+    }
+    throw error;
+  }
+}

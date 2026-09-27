@@ -69,3 +69,18 @@ export function text(dictionary: Dictionary, key: string): string {
   }
   return value;
 }
+
+export type Translate = (key: string) => string;
+
+export function translator(dictionaries: Dictionaries, language: string): Translate {
+  const dictionary = dictionaryFor(dictionaries, language);
+  return (key) => text(dictionary, key);
+}
+
+export function numberedTexts(dictionary: Dictionary, prefix: string): string[] {
+  const texts: string[] = [];
+  for (let number = 1; dictionary[`${prefix}.${number}`] !== undefined; number += 1) {
+    texts.push(text(dictionary, `${prefix}.${number}`));
+  }
+  return texts;
+}

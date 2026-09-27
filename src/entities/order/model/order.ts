@@ -31,6 +31,8 @@ export interface Order {
   readonly payment: PaymentMethod;
 }
 
+export type OrderPricing = Pick<Order, 'mode' | 'brand' | 'quantity' | 'pump'>;
+
 export interface OrderTotal {
   readonly water: number;
   readonly deposit: number;
@@ -50,11 +52,11 @@ export function hasDeliveryPoint(point: DeliveryPoint): boolean {
   return point.coordinates !== null || point.address.trim().length > 0;
 }
 
-export function chargedPump(order: Order): Pump | null {
+export function chargedPump(order: OrderPricing): Pump | null {
   return isPumpOffered(order.mode, order.brand) ? order.pump : null;
 }
 
-export function calculateTotal(order: Order): OrderTotal {
+export function calculateTotal(order: OrderPricing): OrderTotal {
   const water = order.brand.price * order.quantity;
   const deposit = order.mode === 'first' ? order.brand.deposit * order.quantity : 0;
   const pump = chargedPump(order)?.price ?? 0;

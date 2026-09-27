@@ -1,0 +1,138 @@
+---
+import { describeSchedule } from '../../../entities/delivery/model/delivery-schedule';
+import type { SiteConfig } from '../../../shared/config/site-config';
+import type { Translate } from '../../../shared/i18n/dictionary';
+import { capitalizeFirst } from '../../../shared/i18n/list-format';
+import { fillTemplate } from '../../../shared/i18n/template';
+import { escapeHtml, foreignText } from '../../../shared/lib/html-escape';
+import { PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
+import Icon from '../../../shared/ui/Icon.astro';
+import PageSection from '../../../shared/ui/PageSection.astro';
+import ZoneMap from './ZoneMap.astro';
+
+interface Props {
+  config: SiteConfig;
+  say: Translate;
+  language: string;
+}
+
+const { config, say, language } = Astro.props;
+const NAME_SEPARATOR = ', ';
+const localLanguage = config.languages.local;
+const local = (value: string) => foreignText(value, localLanguage);
+const areas = config.zone.map((area) => ({
+  id: area.id,
+  name: local(area.name),
+  former:
+    area.former.length === 0
+      ? null
+      : fillTemplate(escapeHtml(say('zone.former')), { names: local(area.former.join(NAME_SEPARATOR)) }),
+}));
+const schedule = capitalizeFirst(
+  describeSchedule(config.delivery, { everyDay: say('schedule.every_day'), someDays: say('schedule.some_days') }, language),
+  language,
+);
+const listTitle = fillTemplate(escapeHtml(say('zone.list_title')), { ward: local(say('zone.ward_word')) });
+---
+
+<PageSection anchor={PAGE_ANCHOR.zone} title={say('zone.title')}>
+  <div class="zone">
+    <div class="zone-text">
+      <p class="zone-list-title" set:html={listTitle} />
+      <ul class="zone-list">
+        {
+          areas.map((area) => (
+            <li>
+              <Icon name="pin" />
+              <span>
+                <strong set:html={area.name} />
+                {area.former !== null && <span class="zone-former" set:html={` (${area.former})`} />}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+      <dl class="zone-hours">
+        <div>
+          <dt><Icon name="clock" /> {say('zone.hours')}</dt>
+          <dd>{schedule}</dd>
+        </div>
+        <div>
+          <dt><Icon name="scooter" /> {say('zone.same_day')}</dt>
+          <dd>{fillTemplate(say('zone.same_day_text'), { time: config.delivery.sameDayUntil })}</dd>
+        </div>
+      </dl>
+    </div>
+    <ZoneMap areas={config.zone} areaLanguage={localLanguage} />
+  </div>
+</PageSection>
+
+<style>
+  .zone {
+    display: grid;
+    gap: 24px;
+  }
+
+  .zone-list-title {
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+
+  .zone-list {
+    display: grid;
+    gap: 10px;
+    margin: 0 0 24px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .zone-list li {
+    display: flex;
+    gap: 10px;
+  }
+
+  .zone-list :global(.icon) {
+    margin-top: 1px;
+    color: var(--color-sea);
+  }
+
+  .zone-former {
+    color: var(--color-muted);
+  }
+
+  .zone-hours {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+  }
+
+  .zone-hours dt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+  }
+
+  .zone-hours dt :global(.icon) {
+    color: var(--color-sea);
+  }
+
+  .zone-hours dd {
+    margin: 2px 0 0 32px;
+  }
+
+  .zone :global(.zone-map) {
+    max-width: 420px;
+  }
+
+  @media (min-width: 760px) {
+    .zone {
+      grid-template-columns: 1.2fr 1fr;
+      align-items: start;
+    }
+  }
+</style>

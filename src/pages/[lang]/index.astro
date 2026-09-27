@@ -1,12 +1,26 @@
 ---
 import BaseLayout from '../../app/layouts/BaseLayout.astro';
+import { pageMeta } from '../../app/layouts/page-meta';
 import { languageOptions } from '../../features/language-switch/model/language-options';
 import OrderBuilder from '../../features/order-builder/ui/OrderBuilder.astro';
 import { settings } from '../../shared/config/current-settings';
-import { dictionaryFor, text } from '../../shared/i18n/dictionary';
-import { fillTemplate } from '../../shared/i18n/template';
+import { translator } from '../../shared/i18n/dictionary';
+import { localBusinessJsonLd } from '../../shared/lib/local-business';
+import { SITE_ROUTE } from '../../shared/lib/site-route';
 import { sitePath } from '../../shared/lib/site-path';
+import DeliveryZone from '../../widgets/delivery-zone/ui/DeliveryZone.astro';
+import DepositExplainer from '../../widgets/deposit-explainer/ui/DepositExplainer.astro';
+import Faq from '../../widgets/faq/ui/Faq.astro';
+import FinalCall from '../../widgets/final-call/ui/FinalCall.astro';
+import Hero from '../../widgets/hero/ui/Hero.astro';
+import HowItWorks from '../../widgets/how-it-works/ui/HowItWorks.astro';
+import Landlords from '../../widgets/landlords/ui/Landlords.astro';
+import OrderBar from '../../widgets/order-bar/ui/OrderBar.astro';
+import PriceList from '../../widgets/price-list/ui/PriceList.astro';
+import PumpInfo from '../../widgets/pump-info/ui/PumpInfo.astro';
+import SiteFooter from '../../widgets/site-footer/ui/SiteFooter.astro';
 import SiteHeader from '../../widgets/site-header/ui/SiteHeader.astro';
+import TrustPoints from '../../widgets/trust-points/ui/TrustPoints.astro';
 
 export function getStaticPaths() {
   return settings.config.languages.supported.map((lang) => ({ params: { lang } }));
@@ -14,48 +28,50 @@ export function getStaticPaths() {
 
 const { config, dictionaries } = settings;
 const language = Astro.params.lang ?? config.languages.default;
-const dictionary = dictionaryFor(dictionaries, language);
-const say = (key: string) => text(dictionary, key);
+const say = translator(dictionaries, language);
+const languages = languageOptions(config, dictionaries);
+const meta = pageMeta(settings, language, SITE_ROUTE.home);
+const structuredData = localBusinessJsonLd({
+  name: config.brand.name,
+  description: meta.description,
+  url: meta.canonical,
+  image: meta.shareImage,
+  telephone: config.contacts.phone,
+  street: config.warehouse.street,
+  city: config.warehouse.city,
+  country: config.warehouse.country,
+  areaServed: config.zone.map((area) => area.name),
+  opens: config.delivery.opensAt,
+  closes: config.delivery.closesAt,
+  days: config.delivery.days,
+  currency: config.money.currency,
+  language,
+});
 ---
 
-<BaseLayout
-  lang={language}
-  title={fillTemplate(say('meta.title'), { brand: config.brand.name })}
-  description={say('meta.description')}
-  noindex={config.site.noindex}
->
+<BaseLayout meta={meta} structuredData={structuredData}>
   <SiteHeader
     brandName={config.brand.name}
-    tagline={say('brand.tagline')}
+    say={say}
     homePath={sitePath(config.site.base, language)}
-    demoLabel={config.site.demo ? say('header.demo') : null}
+    demo={config.site.demo}
     language={language}
-    languages={languageOptions(config, dictionaries)}
-    languageLabel={say('language.switch_label')}
+    languages={languages}
     storageKey={config.browserStorage.languageKey}
   />
   <main>
-    <section class="hero">
-      <h1>{say('hero.title')}</h1>
-      <p>{say('hero.subtitle')}</p>
-    </section>
+    <Hero config={config} say={say} language={language} />
+    <HowItWorks config={config} say={say} language={language} />
+    <DepositExplainer config={config} say={say} language={language} />
+    <PriceList config={config} say={say} language={language} />
     <OrderBuilder config={config} dictionaries={dictionaries} language={language} />
+    <TrustPoints config={config} say={say} />
+    <PumpInfo config={config} say={say} language={language} />
+    <DeliveryZone config={config} say={say} language={language} />
+    <Landlords config={config} dictionaries={dictionaries} say={say} language={language} />
+    <Faq config={config} say={say} language={language} />
+    <FinalCall config={config} say={say} language={language} />
   </main>
+  <SiteFooter config={config} dictionaries={dictionaries} say={say} language={language} languages={languages} />
+  <OrderBar say={say} />
 </BaseLayout>
-
-<style>
-  .hero {
-    max-width: var(--content-width);
-    margin: 0 auto;
-    padding: 24px var(--gap) 0;
-  }
-
-  .hero h1 {
-    font-size: 1.625rem;
-  }
-
-  .hero p {
-    margin: 0;
-    color: var(--color-muted);
-  }
-</style>

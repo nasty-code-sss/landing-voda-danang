@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { WEEKDAY_ORDER } from '../i18n/weekday-name';
 
 const CLOCK_TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 const IDENTIFIER = /^[a-z0-9-]+$/;
@@ -7,12 +8,17 @@ const INTERNATIONAL_PHONE = /^\+\d{6,15}$/;
 const DIGITS_ONLY_PHONE = /^\d{6,15}$/;
 const TELEGRAM_USERNAME = /^[A-Za-z][A-Za-z0-9_]{4,31}$/;
 const CURRENCY_CODE = /^[A-Z]{3}$/;
+const COUNTRY_CODE = /^[A-Z]{2}$/;
+const FONT_WEIGHT_RANGE = /^\d{3}( \d{3})?$/;
+const JAVASCRIPT_IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
 const clockTime = z.string().regex(CLOCK_TIME);
 const identifier = z.string().regex(IDENTIFIER);
 const languageCode = z.string().regex(LANGUAGE_CODE);
 const amount = z.int().nonnegative();
 const messengerId = z.enum(['whatsapp', 'telegram', 'zalo']);
+const nonEmptyText = z.string().min(1);
+const fontSubset = z.string().regex(IDENTIFIER);
 
 const rawSiteConfigSchema = z.object({
   brand: z.object({
@@ -29,6 +35,7 @@ const rawSiteConfigSchema = z.object({
     default: languageCode,
     supported: z.array(languageCode).min(1),
     message_copy: languageCode,
+    local: languageCode,
   }),
   money: z.object({
     currency: z.string().regex(CURRENCY_CODE),
@@ -42,6 +49,16 @@ const rawSiteConfigSchema = z.object({
     telegram: z.string().regex(TELEGRAM_USERNAME),
     zalo: z.string().regex(DIGITS_ONLY_PHONE),
   }),
+  warehouse: z.object({
+    street: nonEmptyText,
+    city: nonEmptyText,
+    country: z.string().regex(COUNTRY_CODE),
+  }),
+  owner: z.object({
+    name: nonEmptyText,
+    address: nonEmptyText,
+    registration_number: nonEmptyText,
+  }),
   order: z.object({
     min_quantity: z.int().positive(),
     max_quantity: z.int().positive(),
@@ -51,6 +68,22 @@ const rawSiteConfigSchema = z.object({
     same_day_until: clockTime,
     opens_at: clockTime,
     closes_at: clockTime,
+    days: z.array(z.enum(WEEKDAY_ORDER)).min(1),
+  }),
+  zone: z
+    .array(
+      z.object({
+        id: identifier,
+        name: nonEmptyText,
+        former: z.array(nonEmptyText),
+      }),
+    )
+    .min(1),
+  trust: z.object({
+    sealed_bottles: z.boolean(),
+    washed_bottles: z.boolean(),
+    official_dealer: z.boolean(),
+    photo_before_delivery: z.boolean(),
   }),
   brands: z
     .array(
@@ -89,7 +122,26 @@ const rawSiteConfigSchema = z.object({
     maximum_age_ms: z.int().nonnegative(),
   }),
   browser_storage: z.object({
-    language_key: z.string().min(1),
+    language_key: nonEmptyText,
+    last_order_key: nonEmptyText,
+  }),
+  analytics: z.object({
+    queue_name: z.string().regex(JAVASCRIPT_IDENTIFIER),
+  }),
+  design: z.object({
+    font: z.object({
+      package: nonEmptyText,
+      family: nonEmptyText,
+      weights: z.string().regex(FONT_WEIGHT_RANGE),
+      subsets: z.array(fontSubset).min(1),
+      preload: z.record(languageCode, z.array(fontSubset).min(1)),
+    }),
+    share_image: z.object({
+      font_package: nonEmptyText,
+      font_weights: z.array(z.int().min(100).max(900)).min(1),
+      width: z.int().positive(),
+      height: z.int().positive(),
+    }),
   }),
 });
 
@@ -124,12 +176,24 @@ function findConsistencyProblems(raw: RawSiteConfig): string[] {
   if (!supported.includes(raw.languages.message_copy)) {
     problems.push(`languages.message_copy "${raw.languages.message_copy}" is not in languages.supported`);
   }
+  if (!supported.includes(raw.languages.local)) {
+    problems.push(`languages.local "${raw.languages.local}" is not in languages.supported`);
+  }
   for (const language of supported) {
     const order = raw.messengers.order[language];
     if (order === undefined) {
       problems.push(`messengers.order has no entry for language "${language}"`);
     } else if (duplicates(order).length > 0) {
       problems.push(`messengers.order.${language} repeats ${duplicates(order).join(', ')}`);
+    }
+    const preload = raw.design.font.preload[language];
+    if (preload === undefined) {
+      problems.push(`design.font.preload has no entry for language "${language}"`);
+    } else {
+      const unknownSubsets = preload.filter((subset) => !raw.design.font.subsets.includes(subset));
+      if (unknownSubsets.length > 0) {
+        problems.push(`design.font.preload.${language} names subsets not in design.font.subsets: ${unknownSubsets.join(', ')}`);
+      }
     }
   }
   const brandIds = raw.brands.map((brand) => brand.id);
@@ -147,6 +211,13 @@ function findConsistencyProblems(raw: RawSiteConfig): string[] {
   if (duplicates(raw.payments).length > 0) {
     problems.push(`payments repeat ${duplicates(raw.payments).join(', ')}`);
   }
+  const zoneIds = raw.zone.map((area) => area.id);
+  if (duplicates(zoneIds).length > 0) {
+    problems.push(`zone repeats id ${duplicates(zoneIds).join(', ')}`);
+  }
+  if (duplicates(raw.delivery.days).length > 0) {
+    problems.push(`delivery.days repeat ${duplicates(raw.delivery.days).join(', ')}`);
+  }
   if (!isKnownTimeZone(raw.time.zone)) {
     problems.push(`time.zone "${raw.time.zone}" is not a known time zone`);
   }
@@ -161,10 +232,17 @@ function toSiteConfig(raw: RawSiteConfig) {
       default: raw.languages.default,
       supported: raw.languages.supported,
       messageCopy: raw.languages.message_copy,
+      local: raw.languages.local,
     },
     money: raw.money,
     time: raw.time,
     contacts: raw.contacts,
+    warehouse: raw.warehouse,
+    owner: {
+      name: raw.owner.name,
+      address: raw.owner.address,
+      registrationNumber: raw.owner.registration_number,
+    },
     order: {
       minQuantity: raw.order.min_quantity,
       maxQuantity: raw.order.max_quantity,
@@ -174,6 +252,14 @@ function toSiteConfig(raw: RawSiteConfig) {
       sameDayUntil: raw.delivery.same_day_until,
       opensAt: raw.delivery.opens_at,
       closesAt: raw.delivery.closes_at,
+      days: raw.delivery.days,
+    },
+    zone: raw.zone,
+    trust: {
+      sealedBottles: raw.trust.sealed_bottles,
+      washedBottles: raw.trust.washed_bottles,
+      officialDealer: raw.trust.official_dealer,
+      photoBeforeDelivery: raw.trust.photo_before_delivery,
     },
     brands: raw.brands.map((brand) => ({
       id: brand.id,
@@ -197,12 +283,27 @@ function toSiteConfig(raw: RawSiteConfig) {
     },
     browserStorage: {
       languageKey: raw.browser_storage.language_key,
+      lastOrderKey: raw.browser_storage.last_order_key,
+    },
+    analytics: {
+      queueName: raw.analytics.queue_name,
+    },
+    design: {
+      font: raw.design.font,
+      shareImage: {
+        fontPackage: raw.design.share_image.font_package,
+        fontWeights: raw.design.share_image.font_weights,
+        width: raw.design.share_image.width,
+        height: raw.design.share_image.height,
+      },
     },
   };
 }
 
 export type SiteConfig = ReturnType<typeof toSiteConfig>;
 export type MessengerId = z.infer<typeof messengerId>;
+export type TrustPoint = keyof SiteConfig['trust'];
+export type ZoneArea = SiteConfig['zone'][number];
 
 export class SiteConfigError extends Error {
   override readonly name = 'SiteConfigError';

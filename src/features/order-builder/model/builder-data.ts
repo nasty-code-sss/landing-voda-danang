@@ -5,7 +5,9 @@ import type { Pump } from '../../../entities/pump/model/pump';
 import type { MessengerContact } from '../../../shared/api/messenger-link';
 import type { SiteConfig } from '../../../shared/config/site-config';
 import { dictionaryFor, text, type Dictionaries, type Dictionary } from '../../../shared/i18n/dictionary';
-import type { PluralForms } from '../../../shared/i18n/plural';
+import { pluralFormsOf, type PluralForms } from '../../../shared/i18n/plural';
+
+export const BOTTLES_PREFIX = 'bottles';
 
 export interface MessengerTarget extends MessengerContact {
   readonly label: string;
@@ -24,6 +26,7 @@ export interface BuilderTexts {
   readonly sendCopyFailed: string;
   readonly platePhoto: string;
   readonly previewEmpty: string;
+  readonly repeatSummary: string;
 }
 
 export interface BuilderData {
@@ -35,6 +38,7 @@ export interface BuilderData {
   readonly coordinateDecimals: number;
   readonly mapsSearchUrl: string;
   readonly geolocation: { readonly timeoutMs: number; readonly maximumAgeMs: number };
+  readonly lastOrderKey: string;
   readonly brands: readonly Brand[];
   readonly pumps: readonly Pump[];
   readonly payments: readonly PaymentMethod[];
@@ -96,12 +100,7 @@ function messageTexts(config: SiteConfig, dictionary: Dictionary): OrderMessageT
 function builderTexts(dictionary: Dictionary): BuilderTexts {
   const say = (key: string) => text(dictionary, key);
   return {
-    bottles: {
-      one: say('bottles.one'),
-      few: say('bottles.few'),
-      many: say('bottles.many'),
-      other: say('bottles.other'),
-    },
+    bottles: pluralFormsOf(say, BOTTLES_PREFIX),
     quantityMinimum: say('builder.quantity.minimum'),
     quantityMaximum: say('builder.quantity.maximum'),
     missing: { brand: say('builder.missing.brand'), location: say('builder.missing.location') },
@@ -113,6 +112,7 @@ function builderTexts(dictionary: Dictionary): BuilderTexts {
     sendCopyFailed: say('builder.send.copy_failed'),
     platePhoto: say('builder.send.plate_photo'),
     previewEmpty: say('builder.preview.empty'),
+    repeatSummary: say('builder.repeat.summary'),
   };
 }
 
@@ -128,6 +128,7 @@ export function createBuilderData(config: SiteConfig, dictionaries: Dictionaries
     coordinateDecimals: config.order.coordinateDecimals,
     mapsSearchUrl: config.maps.searchUrl,
     geolocation: config.geolocation,
+    lastOrderKey: config.browserStorage.lastOrderKey,
     brands: brandsFromConfig(config),
     pumps: config.pumps,
     payments: config.payments,

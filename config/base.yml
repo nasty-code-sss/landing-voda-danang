@@ -8,6 +8,7 @@ site:
   demo: true
 
 languages:
+  default: en
   supported: [en, vi, ru]
   message_copy: vi
 
@@ -70,9 +71,17 @@ messengers:
     en: [whatsapp, telegram, zalo]
     vi: [zalo, whatsapp, telegram]
     ru: [telegram, whatsapp, zalo]
+  links:
+    whatsapp: https://wa.me/
+    telegram: https://t.me/
+    zalo: https://zalo.me/
 
 maps:
   search_url: https://www.google.com/maps/search/?api=1&query=
+
+geolocation:
+  timeout_ms: 15000
+  maximum_age_ms: 60000
 
 browser_storage:
   language_key: my-water.language

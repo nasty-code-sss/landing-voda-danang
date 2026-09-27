@@ -38,10 +38,35 @@ npm run build:dev    сборка в dist/
 npm run preview      раздать собранный dist/
 ```
 
+## Проверки
+
+```
+npm run format:check   формат (Prettier)
+npm run lint           линтер и запрет комментариев
+npm run secrets        сканер секретов
+npm run test:coverage  модульные тесты с порогом покрытия
+npx playwright install chromium
+npm run build:prod
+npm run e2e            18 сценариев ТЗ и блоки страницы в браузере
+npm run smoke          страницы отвечают, картинки превью и карта сайта на месте
+npm run lighthouse     Lighthouse на телефоне и объём JavaScript
+```
+
+Для e2e, smoke и Lighthouse нужны `E2E_BASE_URL` и `E2E_SITE_DIR` (см. `.env.example`):
+положить их в `.env` или задать в командной строке. Например, `E2E_SITE_DIR=dist`
+и `E2E_BASE_URL=http://127.0.0.1:4322/landing-voda-danang/` поднимут собранный `dist/`
+и прогонят тесты по нему.
+
+## Поставка
+
+Сайт собирается один раз после слияния в `main`, проверяется на стейдже внутри GitHub Actions
+и тем же архивом выкладывается на GitHub Pages после подтверждения. Гейты, выпуск версии
+и откат: [runbook](docs/runbook.md).
+
 ## Документы
 
 - [Карта проекта](docs/architecture.md)
-
+- [Что делать, когда упало](docs/runbook.md)
 - [Бриф](docs/brief.md)
 - [Техническое задание](docs/03-tz.md): структура страницы, конструктор заказа, 18 сценариев приёмки
 - [Анализ рынка и покупателя](docs/01-analiz.md)

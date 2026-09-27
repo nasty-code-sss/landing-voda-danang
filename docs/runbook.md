@@ -1,0 +1,62 @@
+# Что делать, когда упало
+
+Сервера у сайта нет, падать может только поставка и сама страница на GitHub Pages.
+
+## Как устроена поставка
+
+| Гейт | Где | Что проверяет | Файл |
+|---|---|---|---|
+| G0 | перед коммитом | формат, линтер и запрет комментариев, типы, секреты | `.githooks/pre-commit` |
+| G1 | pull request в `main` | всё из G0, уязвимости зависимостей, модульные тесты с порогом покрытия и сравнением с `main`, сборка, e2e | `.github/workflows/pr.yml` |
+| G2 | после слияния в `main` | одна сборка с конфигом прода, на ней все e2e и Lighthouse, прошлый релиз поднимается | `.github/workflows/stage.yml` |
+| G3 | после зелёного G2 | подтверждение Насти, выкладка того же архива на Pages, тег и релиз, smoke на проде | `.github/workflows/prod.yml` |
+
+Хук G0 подключается сам при `npm install` (`core.hooksPath = .githooks`).
+
+## Выпустить новую версию
+
+1. В pull request поднять `version` в `package.json`. Без этого G3 остановится до выката:
+   тег такой версии уже есть.
+2. Слить pull request. Запустится `stage`, за ним `prod`.
+3. `prod` ждёт подтверждения: Actions, прогон `prod`, «Review deployments», `github-pages`,
+   «Approve and deploy».
+4. После выката в релизе `v<версия>` лежат `site.tar.gz` и его SHA-256, в сводке прогона
+   видно, что это тот же архив, что проверялся на стейдже.
+
+## Красный pull request
+
+Открыть прогон `pr`, найти первый красный шаг. Отчёт Playwright лежит в артефакте
+`playwright-report-pr`. Локально то же самое:
+
+```
+npm run format:check
+npm run lint
+npm run check
+npm run secrets
+npm run test:coverage
+npm run build:prod
+E2E_SITE_DIR=dist E2E_BASE_URL=http://127.0.0.1:4322/landing-voda-danang/ npm run e2e
+```
+
+## Красный стейдж
+
+Прод не тронут: `prod` запускается только после зелёного `stage`. Чинить в новой ветке
+через pull request. Отчёт в артефакте `playwright-report-stage`. Упал Lighthouse, а e2e
+зелёные: открыть вложение `lighthouse-<язык>.json` в отчёте, там оценки и объём скриптов.
+
+## Прод открылся с ошибкой или smoke красный
+
+Откат это выкладка готового архива из релиза, без сборки.
+
+1. Actions, workflow `rollback`, «Run workflow».
+2. В поле `tag` вписать последний рабочий релиз, список в Releases.
+3. Подтвердить выкладку в `github-pages`.
+4. `rollback` сам прогонит smoke на проде.
+
+Потом исправление идёт обычным путём с новой версией.
+
+## Pages не открывается совсем
+
+1. Settings, Pages: источник должен быть «GitHub Actions».
+2. Environments, `github-pages`: правило ветки пропускает `main`.
+3. Перезапустить последний зелёный `prod` или выполнить `rollback` с последним тегом.

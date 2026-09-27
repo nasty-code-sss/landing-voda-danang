@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+if [ -z "$staged" ]; then
+  exit 0
+fi
+
+echo "G0: format"
+echo "$staged" | xargs npx prettier --check --ignore-unknown
+echo "G0: secrets"
+echo "$staged" | xargs npx secretlint
+echo "G0: lint"
+npm run --silent lint
+echo "G0: types"
+npm run --silent check

@@ -1,34 +1,89 @@
 ---
-import LanguageSwitch from '../../../features/language-switch/ui/LanguageSwitch.astro';
 import type { LanguageOption } from '../../../features/language-switch/model/language-options';
+import LanguageSwitch from '../../../features/language-switch/ui/LanguageSwitch.astro';
+import type { Translate } from '../../../shared/i18n/dictionary';
+import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
+import { anchorHref, PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
+import Icon from '../../../shared/ui/Icon.astro';
 
 interface Props {
   brandName: string;
-  tagline: string;
+  say: Translate;
   homePath: string;
-  demoLabel: string | null;
+  demo: boolean;
   language: string;
   languages: readonly LanguageOption[];
-  languageLabel: string;
   storageKey: string;
+  sectionPath?: string;
 }
 
-const { brandName, tagline, homePath, demoLabel, language, languages, languageLabel, storageKey } = Astro.props;
+const { brandName, say, homePath, demo, language, languages, storageKey, sectionPath = '' } = Astro.props;
+const CTA_BLOCK = 'header';
+const navigation = [
+  { anchor: PAGE_ANCHOR.howItWorks, label: say('nav.how') },
+  { anchor: PAGE_ANCHOR.prices, label: say('nav.prices') },
+  { anchor: PAGE_ANCHOR.order, label: say('nav.order') },
+  { anchor: PAGE_ANCHOR.faq, label: say('nav.faq') },
+].map((item) => ({ ...item, href: anchorHref(item.anchor, sectionPath) }));
 ---
 
 <header class="site-header">
-  {demoLabel !== null && <p class="demo-badge">{demoLabel}</p>}
+  {demo && <p class="demo-badge">{say('header.demo')}</p>}
   <div class="site-header-row">
     <a class="logo" href={homePath}>
       <span class="logo-name">{brandName}</span>
-      <span class="logo-tagline">{tagline}</span>
+      <span class="logo-tagline">{say('brand.tagline')}</span>
     </a>
-    <LanguageSwitch current={language} options={languages} label={languageLabel} storageKey={storageKey} />
+    <nav class="site-nav" aria-label={say('nav.label')}>
+      <ul>{navigation.map((item) => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+    </nav>
+    <LanguageSwitch
+      current={language}
+      options={languages}
+      label={say('language.switch_label')}
+      storageKey={storageKey}
+      compact
+    />
+    <a
+      class="header-order"
+      href={anchorHref(PAGE_ANCHOR.order, sectionPath)}
+      data-analytics-click={ANALYTICS_EVENT.ctaClick}
+      data-analytics-param-block={CTA_BLOCK}
+    >
+      {say('header.order')}
+    </a>
+    <details class="site-menu" data-site-menu>
+      <summary class="site-menu-toggle" aria-label={say('nav.menu')}>
+        <Icon name="menu" />
+      </summary>
+      <div class="site-menu-panel">
+        <ul class="site-menu-links">{navigation.map((item) => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+        <LanguageSwitch
+          current={language}
+          options={languages}
+          label={say('language.switch_label')}
+          storageKey={storageKey}
+          landmark={false}
+        />
+      </div>
+    </details>
   </div>
 </header>
 
+<script>
+  document.querySelectorAll<HTMLDetailsElement>('[data-site-menu]').forEach((menu) => {
+    menu.addEventListener('click', (event) => {
+      if (event.target instanceof Element && event.target.closest('a') !== null) {
+        menu.open = false;
+      }
+    });
+  });
+</script>
+
 <style>
   .site-header {
+    position: relative;
+    z-index: 10;
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-line);
   }
@@ -46,15 +101,15 @@ const { brandName, tagline, homePath, demoLabel, language, languages, languageLa
   .site-header-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--gap);
-    max-width: var(--content-width);
+    gap: 8px;
+    max-width: var(--page-width);
     margin: 0 auto;
     padding: 8px var(--gap);
   }
 
   .logo {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     min-width: 0;
     color: var(--color-ink);
@@ -72,5 +127,104 @@ const { brandName, tagline, homePath, demoLabel, language, languages, languageLa
     color: var(--color-muted);
     font-size: 0.8125rem;
     line-height: 1.5;
+  }
+
+  .site-nav {
+    display: none;
+  }
+
+  .site-nav ul,
+  .site-menu-links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-nav a,
+  .site-menu-links a {
+    display: flex;
+    align-items: center;
+    min-height: var(--touch-target);
+    padding: 0 12px;
+    border-radius: 999px;
+    color: var(--color-ink);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .site-nav a:hover,
+  .site-menu-links a:hover {
+    background: var(--color-selected);
+  }
+
+  .header-order {
+    display: none;
+    align-items: center;
+    min-height: var(--touch-target);
+    padding: 0 18px;
+    border-radius: 999px;
+    background: var(--color-sea);
+    color: var(--color-surface);
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
+  .site-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--touch-target);
+    height: var(--touch-target);
+    border-radius: 12px;
+    color: var(--color-ink);
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .site-menu-toggle::-webkit-details-marker {
+    display: none;
+  }
+
+  .site-menu[open] .site-menu-toggle {
+    background: var(--color-selected);
+  }
+
+  .site-menu-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    display: grid;
+    gap: 12px;
+    padding: 12px var(--gap) 20px;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-line);
+    box-shadow: 0 12px 24px rgb(15 42 58 / 12%);
+  }
+
+  .site-menu-links a {
+    font-size: 1.125rem;
+  }
+
+  @media (min-width: 600px) {
+    .header-order {
+      display: inline-flex;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .site-nav {
+      display: block;
+    }
+
+    .site-nav ul {
+      display: flex;
+      gap: 2px;
+    }
+
+    .site-menu {
+      display: none;
+    }
   }
 </style>

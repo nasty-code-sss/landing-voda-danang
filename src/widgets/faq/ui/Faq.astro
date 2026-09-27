@@ -1,0 +1,92 @@
+---
+import type { SiteConfig } from '../../../shared/config/site-config';
+import type { Translate } from '../../../shared/i18n/dictionary';
+import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
+import { PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
+import PageSection from '../../../shared/ui/PageSection.astro';
+import { faqEntries } from '../model/faq-entries';
+
+interface Props {
+  config: SiteConfig;
+  say: Translate;
+  language: string;
+}
+
+const { config, say, language } = Astro.props;
+const entries = faqEntries(config, say, language);
+---
+
+<PageSection anchor={PAGE_ANCHOR.faq} title={say('faq.title')}>
+  <div class="faq">
+    {
+      entries.map((entry) => (
+        <details
+          class="faq-item"
+          data-analytics-open={ANALYTICS_EVENT.faqOpen}
+          data-analytics-param-question={String(entry.number)}
+        >
+          <summary>{entry.question}</summary>
+          <p>{entry.answer}</p>
+        </details>
+      ))
+    }
+  </div>
+</PageSection>
+
+<style>
+  .faq {
+    display: grid;
+    gap: 8px;
+    max-width: 780px;
+  }
+
+  .faq-item {
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  summary {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 56px;
+    padding: 12px 52px 12px 20px;
+    font-weight: 700;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::after {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid var(--color-sea);
+    border-bottom: 2px solid var(--color-sea);
+    content: '';
+    transform: translateY(-70%) rotate(45deg);
+    transition: transform 0.2s ease;
+  }
+
+  .faq-item[open] summary::after {
+    transform: translateY(-30%) rotate(-135deg);
+  }
+
+  .faq-item p {
+    margin: 0;
+    padding: 0 20px 16px;
+    color: var(--color-muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    summary::after {
+      transition: none;
+    }
+  }
+</style>

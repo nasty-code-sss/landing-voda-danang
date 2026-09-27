@@ -43,9 +43,11 @@ export const BUILDER_QUERY = {
 const REFILL: OrderMode = 'refill';
 const TOMORROW: DeliveryDay = 'tomorrow';
 
-function readPayment(value: string | null, data: BuilderData): PaymentMethod {
+const FALLBACK_PAYMENT: PaymentMethod = 'cash';
+
+export function paymentOrDefault(value: unknown, data: BuilderData): PaymentMethod {
   const known = data.payments.find((payment) => payment === value);
-  return known ?? data.payments[0] ?? 'cash';
+  return known ?? data.payments[0] ?? FALLBACK_PAYMENT;
 }
 
 function readQuantity(value: string | null, data: BuilderData): number {
@@ -62,7 +64,7 @@ export function readBuilderState(query: URLSearchParams, data: BuilderData): Bui
     coordinates: null,
     address: '',
     day: query.get(BUILDER_QUERY.day) === TOMORROW ? 'tomorrow' : 'today',
-    payment: readPayment(query.get(BUILDER_QUERY.payment), data),
+    payment: paymentOrDefault(query.get(BUILDER_QUERY.payment), data),
   };
 }
 

@@ -1,0 +1,52 @@
+---
+interface Props {
+  anchor: string;
+  title: string;
+  tone?: 'plain' | 'tinted';
+  intro?: string | undefined;
+}
+
+const { anchor, title, tone = 'plain', intro } = Astro.props;
+const titleId = `${anchor}-title`;
+---
+
+<section class:list={['page-section', tone]} id={anchor} aria-labelledby={titleId}>
+  <div class="page-section-inner">
+    <h2 id={titleId}>{title}</h2>
+    {intro !== undefined && <p class="page-section-intro">{intro}</p>}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .page-section {
+    padding: 48px 0;
+  }
+
+  .page-section.tinted {
+    background: var(--color-surface);
+  }
+
+  .page-section-inner {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    padding: 0 var(--gap);
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2rem);
+  }
+
+  .page-section-intro {
+    max-width: 60ch;
+    margin: 0 0 24px;
+    color: var(--color-muted);
+    font-size: 1.0625rem;
+  }
+
+  @media (min-width: 900px) {
+    .page-section {
+      padding: 72px 0;
+    }
+  }
+</style>

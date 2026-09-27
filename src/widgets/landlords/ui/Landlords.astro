@@ -1,0 +1,133 @@
+---
+import type { SiteConfig } from '../../../shared/config/site-config';
+import type { Dictionaries, Translate } from '../../../shared/i18n/dictionary';
+import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
+import { PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
+import Icon from '../../../shared/ui/Icon.astro';
+import PageSection from '../../../shared/ui/PageSection.astro';
+import { landlordLinks, landlordMessage } from '../model/landlord-links';
+
+interface Props {
+  config: SiteConfig;
+  dictionaries: Dictionaries;
+  say: Translate;
+  language: string;
+}
+
+const { config, dictionaries, say, language } = Astro.props;
+const links = landlordLinks(config, dictionaries, language);
+const points = [say('landlords.point.1'), say('landlords.point.2'), say('landlords.point.3')];
+---
+
+<PageSection anchor={PAGE_ANCHOR.landlords} title={say('landlords.title')} intro={say('landlords.intro')} tone="tinted">
+  <div
+    class="landlords"
+    data-landlords
+    data-message={landlordMessage(config, dictionaries, language)}
+    data-copied-note={say('landlords.copied')}
+  >
+    <ul class="landlord-points">
+      {
+        points.map((point) => (
+          <li>
+            <Icon name="home" />
+            <span>{point}</span>
+          </li>
+        ))
+      }
+    </ul>
+    <div class="landlord-contact">
+      <p class="landlord-cta">{say('landlords.cta')}</p>
+      <ul class="landlord-links">
+        {
+          links.map((link) => (
+            <li>
+              <a
+                class="button button-secondary"
+                href={link.href}
+                target="_blank"
+                rel="noopener"
+                data-landlord-link
+                data-analytics-click={ANALYTICS_EVENT.landlordClick}
+                data-analytics-param-messenger={link.id}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="landlord-status" data-landlord-status role="status"></p>
+    </div>
+  </div>
+</PageSection>
+
+<script>
+  import { mountLandlordLinks } from './mount-landlord-links';
+
+  document.querySelectorAll<HTMLElement>('[data-landlords]').forEach(mountLandlordLinks);
+</script>
+
+<style>
+  .landlords {
+    display: grid;
+    gap: 24px;
+  }
+
+  .landlord-points {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .landlord-points li {
+    display: flex;
+    gap: 12px;
+    font-size: 1.0625rem;
+  }
+
+  .landlord-points :global(.icon) {
+    margin-top: 2px;
+    color: var(--color-sea);
+  }
+
+  .landlord-contact {
+    padding: 20px;
+    border-radius: var(--radius);
+    background: var(--color-foam);
+    border: 1px solid var(--color-line);
+  }
+
+  .landlord-cta {
+    margin: 0 0 12px;
+    font-weight: 700;
+  }
+
+  .landlord-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .landlord-status {
+    margin: 12px 0 0;
+    color: var(--color-success-ink);
+    font-weight: 600;
+  }
+
+  .landlord-status:empty {
+    display: none;
+  }
+
+  @media (min-width: 760px) {
+    .landlords {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+</style>

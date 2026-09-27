@@ -1,0 +1,88 @@
+---
+import type { SiteConfig } from '../../../shared/config/site-config';
+import type { Translate } from '../../../shared/i18n/dictionary';
+import { PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
+import Icon from '../../../shared/ui/Icon.astro';
+import PageSection from '../../../shared/ui/PageSection.astro';
+import { promisedTrustPoints } from '../model/trust-points';
+
+interface Props {
+  config: SiteConfig;
+  say: Translate;
+}
+
+const { config, say } = Astro.props;
+const PRESENTATION = {
+  sealedBottles: { icon: 'seal', key: 'sealed' },
+  washedBottles: { icon: 'drops', key: 'washed' },
+  officialDealer: { icon: 'document', key: 'dealer' },
+  photoBeforeDelivery: { icon: 'camera', key: 'photo' },
+} as const;
+const points = promisedTrustPoints(config.trust);
+---
+
+{
+  points.length > 0 && (
+    <PageSection anchor={PAGE_ANCHOR.trust} title={say('trust.title')} intro={say('trust.intro')} tone="tinted">
+      <ul class="trust-points">
+        {points.map((point) => (
+          <li class="trust-point">
+            <span class="trust-icon">
+              <Icon name={PRESENTATION[point].icon} size={28} />
+            </span>
+            <div>
+              <h3>{say(`trust.${PRESENTATION[point].key}.title`)}</h3>
+              <p>{say(`trust.${PRESENTATION[point].key}.text`)}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </PageSection>
+  )
+}
+
+<style>
+  .trust-points {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .trust-point {
+    display: flex;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    background: var(--color-foam);
+  }
+
+  .trust-icon {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    color: var(--color-sea);
+  }
+
+  h3 {
+    font-size: 1.125rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-muted);
+  }
+
+  @media (min-width: 760px) {
+    .trust-points {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

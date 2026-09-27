@@ -1,0 +1,139 @@
+---
+import { brandsFromConfig } from '../../../features/order-builder/model/builder-data';
+import { lowestPrice } from '../../../entities/brand/model/brand';
+import type { SiteConfig } from '../../../shared/config/site-config';
+import type { Translate } from '../../../shared/i18n/dictionary';
+import { capitalizeFirst, formatList } from '../../../shared/i18n/list-format';
+import { formatMoney } from '../../../shared/i18n/number-format';
+import { fillTemplate } from '../../../shared/i18n/template';
+import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
+import { anchorHref, PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
+import { BOTTLE_SCENE_SVG } from '../../../shared/ui/bottle-scene';
+import Icon from '../../../shared/ui/Icon.astro';
+
+interface Props {
+  config: SiteConfig;
+  say: Translate;
+  language: string;
+}
+
+const { config, say, language } = Astro.props;
+const CTA_BLOCK = 'hero';
+const fromPrice = formatMoney(lowestPrice(brandsFromConfig(config)), language, config.money.currency);
+const paymentList = formatList(
+  config.payments.map((payment) => say(`payment.short.${payment}`)),
+  language,
+  'disjunction',
+);
+const facts = [
+  { icon: 'clock', text: fillTemplate(say('hero.fact.same_day'), { time: config.delivery.sameDayUntil }), shown: true },
+  { icon: 'seal', text: say('hero.fact.sealed'), shown: config.trust.sealedBottles },
+  { icon: 'wallet', text: capitalizeFirst(paymentList, language), shown: true },
+] as const;
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h1 id="hero-title">{say('hero.title')}</h1>
+      <p class="hero-subtitle">{fillTemplate(say('hero.subtitle'), { price: fromPrice })}</p>
+      <ul class="hero-facts">
+        {
+          facts
+            .filter((fact) => fact.shown)
+            .map((fact) => (
+              <li>
+                <Icon name={fact.icon} />
+                <span>{fact.text}</span>
+              </li>
+            ))
+        }
+      </ul>
+      <div class="hero-actions">
+        <a
+          class="button button-primary"
+          href={anchorHref(PAGE_ANCHOR.order)}
+          data-analytics-click={ANALYTICS_EVENT.ctaClick}
+          data-analytics-param-block={CTA_BLOCK}
+        >
+          {say('hero.order')}
+        </a>
+        <a class="button button-secondary" href={anchorHref(PAGE_ANCHOR.deposit)}>{say('hero.deposit')}</a>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true" set:html={BOTTLE_SCENE_SVG} />
+  </div>
+</section>
+
+<style>
+  .hero {
+    background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-foam) 100%);
+  }
+
+  .hero-inner {
+    display: grid;
+    gap: 24px;
+    max-width: var(--page-width);
+    margin: 0 auto;
+    padding: 32px var(--gap) 40px;
+  }
+
+  h1 {
+    margin-bottom: 12px;
+    font-size: clamp(1.75rem, 1.3rem + 2.2vw, 2.75rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .hero-subtitle {
+    margin: 0 0 20px;
+    color: var(--color-muted);
+    font-size: 1.125rem;
+  }
+
+  .hero-facts {
+    display: grid;
+    gap: 10px;
+    margin: 0 0 24px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hero-facts li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+  }
+
+  .hero-facts :global(.icon) {
+    color: var(--color-sea);
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .hero-art {
+    max-width: 420px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 0 0 28px 28px;
+  }
+
+  .hero-art :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  @media (min-width: 900px) {
+    .hero-inner {
+      grid-template-columns: 1.2fr 1fr;
+      align-items: center;
+      padding: 56px var(--gap) 64px;
+    }
+  }
+</style>

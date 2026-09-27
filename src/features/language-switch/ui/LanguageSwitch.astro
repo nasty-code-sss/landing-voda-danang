@@ -1,4 +1,5 @@
 ---
+import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
 import type { LanguageOption } from '../model/language-options';
 
 interface Props {
@@ -6,36 +7,46 @@ interface Props {
   options: readonly LanguageOption[];
   label: string;
   storageKey: string;
+  compact?: boolean;
+  landmark?: boolean;
 }
 
-const { current, options, label, storageKey } = Astro.props;
+const { current, options, label, storageKey, compact = false, landmark = true } = Astro.props;
+const Container = landmark ? 'nav' : 'div';
+const containerRole = landmark ? undefined : 'group';
 ---
 
-<nav class="language-switch" aria-label={label}>
+<Container class:list={['language-switch', { compact }]} aria-label={label} role={containerRole}>
   <ul>
     {
-      options.map((option) => (
-        <li>
-          <a
-            href={option.path}
-            lang={option.code}
-            hreflang={option.code}
-            aria-current={option.code === current ? 'page' : undefined}
-            data-language-link
-            data-language={option.code}
-            data-path={option.path}
-            data-storage-key={storageKey}
-          >
-            <span class="language-name">{option.name}</span>
-            <span class="language-short" aria-hidden="true">
-              {option.shortName}
-            </span>
-          </a>
-        </li>
-      ))
+      options.map((option) => {
+        const isCurrent = option.code === current;
+        return (
+          <li>
+            <a
+              href={option.path}
+              lang={option.code}
+              hreflang={option.code}
+              aria-current={isCurrent ? 'page' : undefined}
+              data-language-link
+              data-language={option.code}
+              data-path={option.path}
+              data-storage-key={storageKey}
+              data-analytics-click={isCurrent ? undefined : ANALYTICS_EVENT.languageSwitch}
+              data-analytics-param-from={isCurrent ? undefined : current}
+              data-analytics-param-to={isCurrent ? undefined : option.code}
+            >
+              <span class="language-name">{option.name}</span>
+              <span class="language-short" aria-hidden="true">
+                {option.shortName}
+              </span>
+            </a>
+          </li>
+        );
+      })
     }
   </ul>
-</nav>
+</Container>
 
 <script>
   import { bindLanguageLinks } from './bind-language-links';
@@ -46,6 +57,7 @@ const { current, options, label, storageKey } = Astro.props;
 <style>
   .language-switch ul {
     display: flex;
+    flex-wrap: wrap;
     gap: 4px;
     margin: 0;
     padding: 0;
@@ -58,11 +70,15 @@ const { current, options, label, storageKey } = Astro.props;
     justify-content: center;
     min-width: var(--touch-target);
     min-height: var(--touch-target);
-    padding: 0 10px;
+    padding: 0 12px;
     border-radius: 999px;
     color: var(--color-ink);
     font-weight: 600;
     text-decoration: none;
+  }
+
+  .language-switch a:hover {
+    background: var(--color-selected);
   }
 
   .language-switch a[aria-current='page'] {
@@ -74,8 +90,24 @@ const { current, options, label, storageKey } = Astro.props;
     display: none;
   }
 
+  .compact {
+    flex: none;
+  }
+
+  .compact ul {
+    flex-wrap: nowrap;
+  }
+
   @media (max-width: 599px) {
-    .language-name {
+    .compact ul {
+      gap: 0;
+    }
+
+    .compact a {
+      padding: 0 6px;
+    }
+
+    .compact .language-name {
       position: absolute;
       width: 1px;
       height: 1px;
@@ -84,7 +116,7 @@ const { current, options, label, storageKey } = Astro.props;
       white-space: nowrap;
     }
 
-    .language-short {
+    .compact .language-short {
       display: inline;
     }
   }

@@ -14,7 +14,8 @@
   --gap: 16px;
   --touch-target: 44px;
   --content-width: 720px;
-  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+  --page-width: 1080px;
+  --font-body: var(--font-brand), system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', Arial, sans-serif;
   color-scheme: light;
 }
 
@@ -29,19 +30,26 @@ html {
   text-size-adjust: 100%;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 body {
   margin: 0;
   background: var(--color-foam);
   color: var(--color-ink);
   font-family: var(--font-body);
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: 1.6;
+  overflow-wrap: break-word;
 }
 
 h1,
 h2,
 h3 {
-  line-height: 1.25;
+  line-height: 1.3;
   margin: 0 0 0.5em;
 }
 
@@ -73,4 +81,49 @@ a {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px 22px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button-primary {
+  background: var(--color-sea);
+  color: var(--color-surface);
+}
+
+.button-primary:hover {
+  background: var(--color-sea-dark);
+}
+
+.button-secondary {
+  border-color: var(--color-sea);
+  background: var(--color-surface);
+  color: var(--color-sea-dark);
+}
+
+.button-secondary:hover {
+  background: var(--color-selected);
+}
+
+.button-inverse {
+  background: var(--color-surface);
+  color: var(--color-sea-dark);
+}
+
+.button-inverse:hover {
+  background: var(--color-selected);
 }

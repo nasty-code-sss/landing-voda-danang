@@ -1,0 +1,117 @@
+---
+import BaseLayout from '../../../app/layouts/BaseLayout.astro';
+import { pageMeta } from '../../../app/layouts/page-meta';
+import { languageOptions } from '../../../features/language-switch/model/language-options';
+import { settings } from '../../../shared/config/current-settings';
+import { dictionaryFor, numberedTexts, translator } from '../../../shared/i18n/dictionary';
+import { formatList } from '../../../shared/i18n/list-format';
+import { countWithNoun, pluralFormsOf } from '../../../shared/i18n/plural';
+import { fillTemplate } from '../../../shared/i18n/template';
+import { LEGAL_ANCHOR } from '../../../shared/lib/page-anchor';
+import { SITE_ROUTE } from '../../../shared/lib/site-route';
+import { sitePath } from '../../../shared/lib/site-path';
+import { BOTTLES_PREFIX } from '../../../features/order-builder/model/builder-data';
+import SiteFooter from '../../../widgets/site-footer/ui/SiteFooter.astro';
+import SiteHeader from '../../../widgets/site-header/ui/SiteHeader.astro';
+
+export function getStaticPaths() {
+  return settings.config.languages.supported.map((lang) => ({ params: { lang } }));
+}
+
+const { config, dictionaries } = settings;
+const language = Astro.params.lang ?? config.languages.default;
+const dictionary = dictionaryFor(dictionaries, language);
+const say = translator(dictionaries, language);
+const languages = languageOptions(config, dictionaries);
+const meta = pageMeta(settings, language, SITE_ROUTE.legal);
+const homePath = sitePath(config.site.base, language);
+const values = {
+  brand: config.brand.name,
+  phone: config.contacts.phone,
+  time: config.delivery.sameDayUntil,
+  bottles: countWithNoun(config.order.minQuantity, language, pluralFormsOf(say, BOTTLES_PREFIX)),
+  payments: formatList(
+    config.payments.map((payment) => say(`payment.short.${payment}`)),
+    language,
+    'disjunction',
+  ),
+};
+const sections = [LEGAL_ANCHOR.privacy, LEGAL_ANCHOR.terms, LEGAL_ANCHOR.complaints].map((anchor) => ({
+  anchor,
+  title: say(`legal.${anchor}.title`),
+  paragraphs: numberedTexts(dictionary, `legal.${anchor}.paragraph`).map((paragraph) => fillTemplate(paragraph, values)),
+}));
+---
+
+<BaseLayout meta={meta}>
+  <SiteHeader
+    brandName={config.brand.name}
+    say={say}
+    homePath={homePath}
+    demo={config.site.demo}
+    language={language}
+    languages={languages}
+    storageKey={config.browserStorage.languageKey}
+    sectionPath={homePath}
+  />
+  <main class="legal">
+    <h1>{say('legal.title')}</h1>
+    {config.site.demo && <p class="legal-demo">{say('legal.demo_note')}</p>}
+    <nav class="legal-toc" aria-label={say('legal.toc_label')}>
+      <ul>{sections.map((section) => <li><a href={`#${section.anchor}`}>{section.title}</a></li>)}</ul>
+    </nav>
+    {
+      sections.map((section) => (
+        <section id={section.anchor} aria-labelledby={`${section.anchor}-title`}>
+          <h2 id={`${section.anchor}-title`}>{section.title}</h2>
+          {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+        </section>
+      ))
+    }
+    <p><a class="button button-secondary" href={homePath}>{say('legal.back')}</a></p>
+  </main>
+  <SiteFooter config={config} dictionaries={dictionaries} say={say} language={language} languages={languages} />
+</BaseLayout>
+
+<style>
+  .legal {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 32px var(--gap) 48px;
+  }
+
+  h1 {
+    font-size: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
+  }
+
+  .legal-demo {
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: var(--color-warning-surface);
+    color: var(--color-warning-ink);
+    font-weight: 600;
+  }
+
+  .legal-toc ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .legal-toc a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-target);
+  }
+
+  section {
+    padding-top: 16px;
+  }
+
+  h2 {
+    font-size: 1.375rem;
+  }
+</style>

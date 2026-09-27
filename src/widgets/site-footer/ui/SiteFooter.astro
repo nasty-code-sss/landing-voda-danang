@@ -1,0 +1,187 @@
+---
+import { describeSchedule } from '../../../entities/delivery/model/delivery-schedule';
+import { messengersFor } from '../../../features/order-builder/model/builder-data';
+import type { LanguageOption } from '../../../features/language-switch/model/language-options';
+import LanguageSwitch from '../../../features/language-switch/ui/LanguageSwitch.astro';
+import { chatLink, phoneCallLink } from '../../../shared/api/messenger-link';
+import type { SiteConfig } from '../../../shared/config/site-config';
+import { dictionaryFor, translator, type Dictionaries, type Translate } from '../../../shared/i18n/dictionary';
+import { capitalizeFirst } from '../../../shared/i18n/list-format';
+import { fillTemplate } from '../../../shared/i18n/template';
+import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
+import { anchorHref, LEGAL_ANCHOR } from '../../../shared/lib/page-anchor';
+import { localizedPath, SITE_ROUTE } from '../../../shared/lib/site-route';
+import Icon from '../../../shared/ui/Icon.astro';
+
+interface Props {
+  config: SiteConfig;
+  dictionaries: Dictionaries;
+  say: Translate;
+  language: string;
+  languages: readonly LanguageOption[];
+}
+
+const { config, dictionaries, say, language, languages } = Astro.props;
+const CALL_BLOCK = 'footer';
+const ADDRESS_SEPARATOR = ', ';
+const localLanguage = config.languages.local;
+const sayLocal = translator(dictionaries, localLanguage);
+const messengers = messengersFor(config, dictionaryFor(dictionaries, language), language);
+const legalPath = localizedPath(config.site.base, language, SITE_ROUTE.legal);
+const legalLinks = [
+  { anchor: LEGAL_ANCHOR.privacy, label: say('footer.privacy') },
+  { anchor: LEGAL_ANCHOR.terms, label: say('footer.terms') },
+  { anchor: LEGAL_ANCHOR.complaints, label: say('footer.complaints') },
+];
+const schedule = capitalizeFirst(
+  describeSchedule(config.delivery, { everyDay: say('schedule.every_day'), someDays: say('schedule.some_days') }, language),
+  language,
+);
+---
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <section class="footer-block" aria-labelledby="footer-contacts-title">
+      <h2 id="footer-contacts-title">{say('footer.contacts')}</h2>
+      <ul class="footer-contacts">
+        <li>
+          <Icon name="phone" />
+          <a
+            href={phoneCallLink(config.contacts.phone)}
+            data-analytics-click={ANALYTICS_EVENT.callClick}
+            data-analytics-param-block={CALL_BLOCK}
+          >
+            {config.contacts.phone}
+          </a>
+        </li>
+        {
+          messengers.map((messenger) => (
+            <li>
+              <Icon name="chat" />
+              <a href={chatLink(messenger)} target="_blank" rel="noopener">
+                {messenger.label}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <Icon name="pin" />
+          <span lang={localLanguage}>{[config.warehouse.street, config.warehouse.city].join(ADDRESS_SEPARATOR)}</span>
+        </li>
+        <li>
+          <Icon name="clock" />
+          <span>{schedule}</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="footer-block owner" lang={localLanguage} aria-labelledby="footer-owner-title">
+      <h2 id="footer-owner-title">{sayLocal('owner.title')}</h2>
+      <p class="owner-name">{config.owner.name}</p>
+      <p>{fillTemplate(sayLocal('owner.address'), { address: config.owner.address })}</p>
+      <p>{fillTemplate(sayLocal('owner.registration'), { number: config.owner.registrationNumber })}</p>
+    </section>
+
+    <section class="footer-block" aria-labelledby="footer-legal-title">
+      <h2 id="footer-legal-title">{say('footer.documents')}</h2>
+      <ul class="footer-links">
+        {legalLinks.map((link) => <li><a href={anchorHref(link.anchor, legalPath)}>{link.label}</a></li>)}
+      </ul>
+      <LanguageSwitch
+        current={language}
+        options={languages}
+        label={say('language.switch_label')}
+        storageKey={config.browserStorage.languageKey}
+        landmark={false}
+      />
+    </section>
+  </div>
+  {config.site.demo && <p class="footer-demo">{say('footer.demo')}</p>}
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--color-ink);
+    color: #e6eff5;
+  }
+
+  .site-footer-inner {
+    display: grid;
+    gap: 32px;
+    max-width: var(--page-width);
+    margin: 0 auto;
+    padding: 48px var(--gap) 32px;
+  }
+
+  h2 {
+    margin-bottom: 12px;
+    color: #ffffff;
+    font-size: 1.125rem;
+  }
+
+  a {
+    color: #ffffff;
+  }
+
+  .footer-contacts,
+  .footer-links {
+    display: grid;
+    gap: 4px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .footer-contacts li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--touch-target);
+  }
+
+  .footer-contacts :global(.icon) {
+    color: #8fcbe9;
+  }
+
+  .footer-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-target);
+  }
+
+  .owner p {
+    margin: 0 0 6px;
+  }
+
+  .owner-name {
+    font-weight: 700;
+  }
+
+  .site-footer :global(.language-switch a) {
+    color: #ffffff;
+  }
+
+  .site-footer :global(.language-switch a:hover) {
+    background: rgb(255 255 255 / 12%);
+  }
+
+  .site-footer :global(.language-switch a[aria-current='page']) {
+    background: #ffffff;
+    color: var(--color-ink);
+  }
+
+  .footer-demo {
+    margin: 0;
+    padding: 16px var(--gap);
+    border-top: 1px solid rgb(255 255 255 / 15%);
+    color: #b8cad6;
+    font-size: 0.875rem;
+    text-align: center;
+  }
+
+  @media (min-width: 760px) {
+    .site-footer-inner {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

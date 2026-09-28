@@ -89,7 +89,13 @@ export function rawConfigFixture() {
         weights: '200 800',
         subsets: ['latin', 'latin-ext', 'vietnamese', 'cyrillic'],
       },
-      share_image: { font_package: '@fontsource/manrope', font_weights: [600, 800], width: 1200, height: 630 },
+      share_image: {
+        font_package: '@fontsource/manrope',
+        font_weights: [600, 800],
+        script_fonts: {},
+        width: 1200,
+        height: 630,
+      },
     },
   };
 }

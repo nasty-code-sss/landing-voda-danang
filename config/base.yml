@@ -9,13 +9,15 @@ site:
 
 languages:
   default: en
-  supported: [en, vi, ru]
+  supported: [en, vi, ru, ko, zh]
   message_copy: vi
   local: vi
   flags:
     en: gb
     vi: vn
     ru: ru
+    ko: kr
+    zh: cn
 
 money:
   currency: VND
@@ -110,6 +112,8 @@ messengers:
     en: [whatsapp, telegram, zalo]
     vi: [zalo, whatsapp, telegram]
     ru: [telegram, whatsapp, zalo]
+    ko: [whatsapp, telegram, zalo]
+    zh: [whatsapp, telegram, zalo]
   links:
     whatsapp: https://wa.me/
     telegram: https://t.me/
@@ -138,5 +142,8 @@ design:
   share_image:
     font_package: "@fontsource/manrope"
     font_weights: [600, 800]
+    script_fonts:
+      ko: "@fontsource/noto-sans-kr"
+      zh: "@fontsource/noto-sans-sc"
     width: 1200
     height: 630

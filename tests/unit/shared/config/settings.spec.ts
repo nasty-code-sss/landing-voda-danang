@@ -12,7 +12,8 @@ describe('loadSettings', () => {
 
     expect(settings.config.site.url).toBe('http://localhost:4321');
     expect(settings.config.site.base).toBe('/landing-voda-danang');
-    expect(Object.keys(settings.dictionaries).sort()).toEqual(['en', 'ru', 'vi']);
+    expect(Object.keys(settings.dictionaries).sort()).toEqual([...settings.config.languages.supported].sort());
+    expect(settings.config.languages.supported).toEqual(expect.arrayContaining(['en', 'vi', 'ru', 'ko', 'zh']));
   });
 
   it('loadSettings_withoutAppEnv_throwsListingAllowedValues', () => {

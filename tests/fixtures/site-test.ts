@@ -9,6 +9,8 @@ const VIETNAM_TEN_AM_SAME_DAY_IS_OPEN = '2026-09-28T03:00:00Z';
 
 export const CYRILLIC_LETTER = /[\u0400-\u04FF]/;
 export const VIETNAMESE_LETTER = /[ăâđêôơưàáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵ]/i;
+export const HANGUL_LETTER = /\p{Script=Hangul}/u;
+export const HAN_CHARACTER = /\p{Script=Han}/u;
 export const DEVICE_POINT = { latitude: 16.054123, longitude: 108.247311 };
 export const artifactConfig = loadSettings(process.cwd(), ARTIFACT_ENVIRONMENT).config;
 

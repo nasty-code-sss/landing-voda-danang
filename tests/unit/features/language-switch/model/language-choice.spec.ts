@@ -1,7 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import { isSupportedLanguage, preferredLanguage } from '../../../../../src/features/language-switch/model/language-choice';
+import {
+  isSupportedLanguage,
+  languageToOpen,
+  preferredLanguage,
+} from '../../../../../src/features/language-switch/model/language-choice';
 
 const SUPPORTED = ['en', 'vi', 'ru'];
+const FALLBACK = 'en';
+
+describe('languageToOpen', () => {
+  it('languageToOpen_withRememberedChoice_prefersItOverBrowser', () => {
+    expect(languageToOpen({ remembered: 'vi', browserLanguages: ['ru-RU'], supported: SUPPORTED, fallback: FALLBACK })).toBe(
+      'vi',
+    );
+  });
+
+  it('languageToOpen_withoutRememberedChoice_followsBrowser', () => {
+    expect(
+      languageToOpen({ remembered: null, browserLanguages: ['ru-RU', 'en-US'], supported: SUPPORTED, fallback: FALLBACK }),
+    ).toBe('ru');
+  });
+
+  it('languageToOpen_withUnsupportedRememberedChoice_followsBrowser', () => {
+    expect(languageToOpen({ remembered: 'ko', browserLanguages: ['vi-VN'], supported: SUPPORTED, fallback: FALLBACK })).toBe(
+      'vi',
+    );
+  });
+
+  it('languageToOpen_withNothingSupported_opensFallback', () => {
+    expect(
+      languageToOpen({ remembered: null, browserLanguages: ['de-DE', 'ko-KR'], supported: SUPPORTED, fallback: FALLBACK }),
+    ).toBe(FALLBACK);
+  });
+});
 
 describe('preferredLanguage', () => {
   it('preferredLanguage_withRegionalRussian_picksRu', () => {

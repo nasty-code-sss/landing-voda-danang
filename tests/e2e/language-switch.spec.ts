@@ -6,7 +6,8 @@ test.describe('scenario 2: switching language keeps the order', () => {
     await page.locator('input[name="brand"][value="sunrise"]').check();
     await page.locator('[data-quantity-step="1"]').click();
 
-    await page.locator('.site-header-row .language-switch a[data-language="en"]').filter({ visible: true }).click();
+    await page.locator('.site-header .language-menu summary').click();
+    await page.locator('.site-header .language-menu a[data-language="en"]').click();
     await page.waitForURL(/\/en\//);
 
     expect(new URL(page.url()).pathname).toMatch(/\/en\/$/);

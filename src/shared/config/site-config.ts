@@ -9,6 +9,7 @@ const DIGITS_ONLY_PHONE = /^\d{6,15}$/;
 const TELEGRAM_USERNAME = /^[A-Za-z][A-Za-z0-9_]{4,31}$/;
 const CURRENCY_CODE = /^[A-Z]{3}$/;
 const COUNTRY_CODE = /^[A-Z]{2}$/;
+const FLAG_CODE = /^[a-z]{2}$/;
 const FONT_WEIGHT_RANGE = /^\d{3}( \d{3})?$/;
 const JAVASCRIPT_IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
@@ -36,6 +37,7 @@ const rawSiteConfigSchema = z.object({
     supported: z.array(languageCode).min(1),
     message_copy: languageCode,
     local: languageCode,
+    flags: z.record(languageCode, z.string().regex(FLAG_CODE)),
   }),
   money: z.object({
     currency: z.string().regex(CURRENCY_CODE),
@@ -179,6 +181,9 @@ function findConsistencyProblems(raw: RawSiteConfig): string[] {
     problems.push(`languages.local "${raw.languages.local}" is not in languages.supported`);
   }
   for (const language of supported) {
+    if (raw.languages.flags[language] === undefined) {
+      problems.push(`languages.flags has no entry for language "${language}"`);
+    }
     const order = raw.messengers.order[language];
     if (order === undefined) {
       problems.push(`messengers.order has no entry for language "${language}"`);
@@ -223,6 +228,7 @@ function toSiteConfig(raw: RawSiteConfig) {
       supported: raw.languages.supported,
       messageCopy: raw.languages.message_copy,
       local: raw.languages.local,
+      flags: raw.languages.flags,
     },
     money: raw.money,
     time: raw.time,

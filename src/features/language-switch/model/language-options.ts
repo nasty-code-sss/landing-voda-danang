@@ -6,8 +6,17 @@ export interface LanguageOption {
   readonly code: string;
   readonly name: string;
   readonly shortName: string;
+  readonly flag: string;
   readonly pickerTitle: string;
   readonly path: string;
+}
+
+function flagOf(config: SiteConfig, code: string): string {
+  const flag = config.languages.flags[code];
+  if (flag === undefined) {
+    throw new Error(`languages.flags has no entry for language "${code}"`);
+  }
+  return flag;
 }
 
 export function languageOptions(config: SiteConfig, dictionaries: Dictionaries): LanguageOption[] {
@@ -17,6 +26,7 @@ export function languageOptions(config: SiteConfig, dictionaries: Dictionaries):
       code,
       name: text(dictionary, 'language.name'),
       shortName: text(dictionary, 'language.code'),
+      flag: flagOf(config, code),
       pickerTitle: text(dictionary, 'picker.title'),
       path: sitePath(config.site.base, code),
     };

@@ -17,9 +17,45 @@ env:
   SITE_ARCHIVE: site.tar.gz
 
 jobs:
+  version:
+    name: Version is not released yet
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      release: ${{ steps.version.outputs.release }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Tag of package.json version
+        id: version
+        run: |
+          tag="v$(node -p "require('./package.json').version")"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          status=0
+          git ls-remote --exit-code --tags origin "refs/tags/$tag" > /dev/null || status=$?
+          case "$status" in
+            0)
+              echo "release=false" >> "$GITHUB_OUTPUT"
+              echo "$tag is already released, nothing to deploy" >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            2)
+              echo "release=true" >> "$GITHUB_OUTPUT"
+              echo "$tag is new, it goes to prod after approval" >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *)
+              echo "::error::cannot read tags of origin, git ls-remote exited with $status"
+              exit 1
+              ;;
+          esac
+
   deploy:
     name: G3 deploy the stage artifact to prod
-    if: github.event.workflow_run.conclusion == 'success'
+    needs: version
+    if: needs.version.outputs.release == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -39,16 +75,6 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
-
-      - name: Version tag is new
-        id: version
-        run: |
-          tag="v$(node -p "require('./package.json').version")"
-          if git ls-remote --exit-code --tags origin "refs/tags/$tag" > /dev/null; then
-            echo "::error::$tag is already released, raise the version in package.json before going to prod"
-            exit 1
-          fi
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - uses: actions/download-artifact@v8
         with:
@@ -72,7 +98,7 @@ jobs:
 
       - name: Tag and release the artifact
         env:
-          TAG: ${{ steps.version.outputs.tag }}
+          TAG: ${{ needs.version.outputs.tag }}
         run: |
           gh release create "$TAG" "$SITE_ARCHIVE" "$SITE_ARCHIVE.sha256" \
             --target "$SOURCE_SHA" \

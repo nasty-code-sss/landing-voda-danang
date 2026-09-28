@@ -7,7 +7,13 @@ export function rawConfigFixture() {
   return {
     brand: { name: 'Mỹ Water', slug: 'my-water' },
     site: { url: 'http://localhost:4321', base: '/landing-voda-danang', noindex: true, demo: true },
-    languages: { default: 'en', supported: ['en', 'vi', 'ru'], message_copy: 'vi', local: 'vi' },
+    languages: {
+      default: 'en',
+      supported: ['en', 'vi', 'ru'],
+      message_copy: 'vi',
+      local: 'vi',
+      flags: { en: 'gb', vi: 'vn', ru: 'ru' },
+    },
     money: { currency: 'VND' },
     time: { zone: 'Asia/Ho_Chi_Minh' },
     contacts: { phone: '+84000000000', whatsapp: '84000000000', telegram: 'mywater_danang_demo', zalo: '0000000000' },

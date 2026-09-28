@@ -1,0 +1,27 @@
+---
+const FLAG_FILES = import.meta.glob<string>('./flags/*.svg', { query: '?raw', import: 'default', eager: true });
+const FLAG_WIDTH = 20;
+const FLAG_HEIGHT = 15;
+
+interface Props {
+  country: string;
+}
+
+const { country } = Astro.props;
+const svg = FLAG_FILES[`./flags/${country}.svg`];
+if (svg === undefined) {
+  throw new Error(`No flag "${country}.svg" in src/shared/ui/flags`);
+}
+const source = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+---
+
+<img class="flag" src={source} alt="" width={FLAG_WIDTH} height={FLAG_HEIGHT} />
+
+<style>
+  .flag {
+    flex: none;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgb(15 42 58 / 16%);
+    object-fit: cover;
+  }
+</style>

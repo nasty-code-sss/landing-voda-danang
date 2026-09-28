@@ -5,12 +5,13 @@ interface Props {
   brandName: string;
   options: readonly LanguageOption[];
   storageKey: string;
+  defaultLanguage: string;
 }
 
-const { brandName, options, storageKey } = Astro.props;
+const { brandName, options, storageKey, defaultLanguage } = Astro.props;
 ---
 
-<main class="picker" data-language-picker data-storage-key={storageKey} data-pending>
+<main class="picker" data-language-picker data-storage-key={storageKey} data-default-language={defaultLanguage} data-pending>
   <p class="picker-brand">{brandName}</p>
   <h1 class="picker-title">
     {options.map((option) => (
@@ -105,10 +106,5 @@ const { brandName, options, storageKey } = Astro.props;
     font-size: 1.125rem;
     font-weight: 700;
     text-decoration: none;
-  }
-
-  .picker-option[data-preferred] {
-    border-color: var(--color-sea);
-    background: var(--color-selected);
   }
 </style>

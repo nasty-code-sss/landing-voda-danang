@@ -1,6 +1,6 @@
 ---
 import type { LanguageOption } from '../../../features/language-switch/model/language-options';
-import LanguageSwitch from '../../../features/language-switch/ui/LanguageSwitch.astro';
+import LanguageMenu from '../../../features/language-switch/ui/LanguageMenu.astro';
 import type { Translate } from '../../../shared/i18n/dictionary';
 import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
 import { anchorHref, PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
@@ -43,7 +43,7 @@ const navigation = [
         ))}
       </ul>
     </nav>
-    <LanguageSwitch current={language} options={languages} label={say('language.switch_label')} storageKey={storageKey} compact />
+    <LanguageMenu current={language} options={languages} label={say('language.switch_label')} storageKey={storageKey} />
     <a
       class="header-order"
       href={anchorHref(PAGE_ANCHOR.order, sectionPath)}
@@ -64,13 +64,6 @@ const navigation = [
             </li>
           ))}
         </ul>
-        <LanguageSwitch
-          current={language}
-          options={languages}
-          label={say('language.switch_label')}
-          storageKey={storageKey}
-          landmark={false}
-        />
       </div>
     </details>
   </div>

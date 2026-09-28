@@ -1,0 +1,147 @@
+---
+import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
+import Flag from '../../../shared/ui/Flag.astro';
+import Icon from '../../../shared/ui/Icon.astro';
+import type { LanguageOption } from '../model/language-options';
+
+interface Props {
+  current: string;
+  options: readonly LanguageOption[];
+  label: string;
+  storageKey: string;
+}
+
+const CHEVRON_SIZE = 16;
+const { current, options, label, storageKey } = Astro.props;
+const active = options.find((option) => option.code === current);
+if (active === undefined) {
+  throw new Error(`Language "${current}" is not among the language options`);
+}
+---
+
+<nav class="language-switch language-menu" aria-label={label}>
+  <details class="language-menu-details" data-language-menu>
+    <summary class="language-menu-toggle">
+      <Flag country={active.flag} />
+      <span class="language-menu-code" aria-hidden="true">
+        {active.shortName}
+      </span>
+      <span class="visually-hidden" lang={active.code}>
+        {active.name}
+      </span>
+      <Icon name="chevron" size={CHEVRON_SIZE} />
+    </summary>
+    <ul class="language-menu-list">
+      {options.map((option) => {
+        const isCurrent = option.code === current;
+        return (
+          <li>
+            <a
+              class="language-menu-option"
+              href={option.path}
+              lang={option.code}
+              hreflang={option.code}
+              aria-current={isCurrent ? 'page' : undefined}
+              data-language-link
+              data-language={option.code}
+              data-path={option.path}
+              data-storage-key={storageKey}
+              data-analytics-click={isCurrent ? undefined : ANALYTICS_EVENT.languageSwitch}
+              data-analytics-param-from={isCurrent ? undefined : current}
+              data-analytics-param-to={isCurrent ? undefined : option.code}
+            >
+              <Flag country={option.flag} />
+              <span class="language-menu-code" aria-hidden="true">
+                {option.shortName}
+              </span>
+              <span class="visually-hidden">{option.name}</span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </details>
+</nav>
+
+<script>
+  import { bindLanguageLinks } from './bind-language-links';
+  import { mountLanguageMenu } from './mount-language-menu';
+
+  document.querySelectorAll<HTMLDetailsElement>('[data-language-menu]').forEach((menu) => {
+    mountLanguageMenu(menu, document);
+    bindLanguageLinks(menu);
+  });
+</script>
+
+<style>
+  .language-menu {
+    position: relative;
+    flex: none;
+  }
+
+  .language-menu-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--touch-target);
+    padding: 0 8px 0 12px;
+    border-radius: 999px;
+    color: var(--color-ink);
+    font-weight: 700;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .language-menu-toggle::-webkit-details-marker {
+    display: none;
+  }
+
+  .language-menu-toggle:hover,
+  .language-menu-details[open] .language-menu-toggle {
+    background: var(--color-selected);
+  }
+
+  .language-menu-details[open] .language-menu-toggle :global(.icon) {
+    transform: rotate(180deg);
+  }
+
+  .language-menu-list {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 20;
+    display: grid;
+    gap: 2px;
+    min-width: 120px;
+    max-height: min(70vh, 420px);
+    margin: 0;
+    padding: 6px;
+    overflow-y: auto;
+    list-style: none;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 24px rgb(15 42 58 / 12%);
+  }
+
+  .language-menu-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--touch-target);
+    padding: 0 12px;
+    border-radius: 8px;
+    color: var(--color-ink);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .language-menu-option:hover {
+    background: var(--color-selected);
+  }
+
+  .language-menu-option[aria-current='page'] {
+    background: var(--color-sea);
+    color: var(--color-surface);
+  }
+</style>

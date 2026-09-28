@@ -7,16 +7,15 @@ interface Props {
   options: readonly LanguageOption[];
   label: string;
   storageKey: string;
-  compact?: boolean;
   landmark?: boolean;
 }
 
-const { current, options, label, storageKey, compact = false, landmark = true } = Astro.props;
+const { current, options, label, storageKey, landmark = true } = Astro.props;
 const Container = landmark ? 'nav' : 'div';
 const containerRole = landmark ? undefined : 'group';
 ---
 
-<Container class:list={['language-switch', { compact }]} aria-label={label} role={containerRole}>
+<Container class="language-switch" aria-label={label} role={containerRole} data-language-list>
   <ul>
     {options.map((option) => {
       const isCurrent = option.code === current;
@@ -35,10 +34,7 @@ const containerRole = landmark ? undefined : 'group';
             data-analytics-param-from={isCurrent ? undefined : current}
             data-analytics-param-to={isCurrent ? undefined : option.code}
           >
-            <span class="language-name">{option.name}</span>
-            <span class="language-short" aria-hidden="true">
-              {option.shortName}
-            </span>
+            {option.name}
           </a>
         </li>
       );
@@ -49,7 +45,7 @@ const containerRole = landmark ? undefined : 'group';
 <script>
   import { bindLanguageLinks } from './bind-language-links';
 
-  bindLanguageLinks(document);
+  document.querySelectorAll('[data-language-list]').forEach(bindLanguageLinks);
 </script>
 
 <style>
@@ -82,40 +78,5 @@ const containerRole = landmark ? undefined : 'group';
   .language-switch a[aria-current='page'] {
     background: var(--color-sea);
     color: var(--color-surface);
-  }
-
-  .language-short {
-    display: none;
-  }
-
-  .compact {
-    flex: none;
-  }
-
-  .compact ul {
-    flex-wrap: nowrap;
-  }
-
-  @media (max-width: 599px) {
-    .compact ul {
-      gap: 0;
-    }
-
-    .compact a {
-      padding: 0 6px;
-    }
-
-    .compact .language-name {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0 0 0 0);
-      white-space: nowrap;
-    }
-
-    .compact .language-short {
-      display: inline;
-    }
   }
 </style>

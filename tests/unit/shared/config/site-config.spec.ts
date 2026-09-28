@@ -40,6 +40,15 @@ describe('parseSiteConfig', () => {
     );
   });
 
+  it('parseSiteConfig_withLanguageMissingFlag_throwsNamingTheLanguage', () => {
+    const raw = rawConfigFixture();
+    const { vi: _vi, ...flagsWithoutVietnamese } = raw.languages.flags;
+
+    expect(() => parseSiteConfig({ ...raw, languages: { ...raw.languages, flags: flagsWithoutVietnamese } })).toThrow(
+      /languages\.flags has no entry for language "vi"/,
+    );
+  });
+
   it('parseSiteConfig_withUnknownTimeZone_throws', () => {
     const raw = rawConfigFixture();
 

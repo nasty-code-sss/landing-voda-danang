@@ -6,10 +6,10 @@ describe('languageOptions', () => {
   it('languageOptions_useSelfNamesAndBasePath', () => {
     const options = languageOptions(configFixture(), projectDictionaries());
 
-    expect(options.map(({ code, name, shortName, path }) => ({ code, name, shortName, path }))).toEqual([
-      { code: 'en', name: 'English', shortName: 'EN', path: '/landing-voda-danang/en/' },
-      { code: 'vi', name: 'Tiếng Việt', shortName: 'VI', path: '/landing-voda-danang/vi/' },
-      { code: 'ru', name: 'Русский', shortName: 'RU', path: '/landing-voda-danang/ru/' },
+    expect(options.map(({ code, name, shortName, flag, path }) => ({ code, name, shortName, flag, path }))).toEqual([
+      { code: 'en', name: 'English', shortName: 'EN', flag: 'gb', path: '/landing-voda-danang/en/' },
+      { code: 'vi', name: 'Tiếng Việt', shortName: 'VI', flag: 'vn', path: '/landing-voda-danang/vi/' },
+      { code: 'ru', name: 'Русский', shortName: 'RU', flag: 'ru', path: '/landing-voda-danang/ru/' },
     ]);
   });
 });

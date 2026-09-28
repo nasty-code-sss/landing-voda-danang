@@ -12,6 +12,10 @@ languages:
   supported: [en, vi, ru]
   message_copy: vi
   local: vi
+  flags:
+    en: gb
+    vi: vn
+    ru: ru
 
 money:
   currency: VND

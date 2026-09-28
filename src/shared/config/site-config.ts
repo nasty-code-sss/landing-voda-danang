@@ -140,6 +140,7 @@ const rawSiteConfigSchema = z.object({
     share_image: z.object({
       font_package: nonEmptyText,
       font_weights: z.array(z.int().min(100).max(900)).min(1),
+      script_fonts: z.record(languageCode, nonEmptyText),
       width: z.int().positive(),
       height: z.int().positive(),
     }),
@@ -289,6 +290,7 @@ function toSiteConfig(raw: RawSiteConfig) {
       shareImage: {
         fontPackage: raw.design.share_image.font_package,
         fontWeights: raw.design.share_image.font_weights,
+        scriptFonts: raw.design.share_image.script_fonts,
         width: raw.design.share_image.width,
         height: raw.design.share_image.height,
       },

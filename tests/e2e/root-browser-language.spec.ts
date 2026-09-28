@@ -17,6 +17,20 @@ test.describe('scenario 9: site root follows the browser language', () => {
     });
   });
 
+  for (const { locale, language } of [
+    { locale: 'ko-KR', language: 'ko' },
+    { locale: 'zh-CN', language: 'zh' },
+  ]) {
+    test.describe(`${locale} browser`, () => {
+      test.use({ locale });
+
+      test(`first visit opens /${language}/`, async ({ page }) => {
+        await page.goto('./');
+        await page.waitForURL(new RegExp(`/${language}/$`));
+      });
+    });
+  }
+
   test.describe('browser language the site does not have', () => {
     test.use({ locale: 'de-DE' });
 

@@ -5,6 +5,7 @@ const NON_BREAKING_SPACES = /[\u00A0\u202F]/g;
 const WINDOWS_LINE_BREAKS = /\r\n/g;
 const ARTIFACT_ENVIRONMENT = 'prod';
 const MESSAGE_PARAMETER = 'text';
+const VIETNAM_TEN_AM_SAME_DAY_IS_OPEN = '2026-09-28T03:00:00Z';
 
 export const CYRILLIC_LETTER = /[\u0400-\u04FF]/;
 export const VIETNAMESE_LETTER = /[ăâđêôơưàáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵ]/i;
@@ -66,12 +67,20 @@ function isSitePage(page: Page, siteOrigin: string): boolean {
   return page.url().startsWith(siteOrigin);
 }
 
+interface SiteOptions {
+  readonly frozenTime: string | null;
+}
+
 interface SiteFixtures {
   readonly consoleErrors: string[];
 }
 
-export const test = base.extend<SiteFixtures>({
-  context: async ({ context, baseURL }, use) => {
+export const test = base.extend<SiteOptions & SiteFixtures>({
+  frozenTime: [VIETNAM_TEN_AM_SAME_DAY_IS_OPEN, { option: true }],
+  context: async ({ context, baseURL, frozenTime }, use) => {
+    if (frozenTime !== null) {
+      await context.clock.setFixedTime(frozenTime);
+    }
     const siteOrigin = new URL(baseURL ?? '').origin;
     await context.route('**/*', (route) =>
       new URL(route.request().url()).origin === siteOrigin ? route.continue() : route.abort('blockedbyclient'),

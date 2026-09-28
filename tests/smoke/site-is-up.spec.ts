@@ -5,6 +5,8 @@ const HTTP_OK = 200;
 const PAGE_PATHS = ['./', ...artifactConfig.languages.supported.flatMap((language) => [`${language}/`, `${language}/legal/`])];
 const SHARE_IMAGES = artifactConfig.languages.supported.map((language) => `${language}/og.png`);
 
+test.use({ frozenTime: null });
+
 test.describe('smoke: published site is up', () => {
   for (const path of PAGE_PATHS) {
     test(`${path} answers with visible text free of unfilled placeholders`, async ({ page }) => {

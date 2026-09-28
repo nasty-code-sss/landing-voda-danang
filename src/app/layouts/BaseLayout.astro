@@ -16,7 +16,6 @@ interface Props {
 }
 
 const { meta, structuredData = null } = Astro.props;
-const fontPreload = meta.fontSubsets.map((subset) => ({ subset }));
 ---
 
 <!doctype html>
@@ -28,7 +27,9 @@ const fontPreload = meta.fontSubsets.map((subset) => ({ subset }));
     <meta name="description" content={meta.description} />
     {meta.noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="canonical" href={meta.canonical} />
-    {meta.alternates.map((alternate) => <link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />)}
+    {meta.alternates.map((alternate) => (
+      <link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />
+    ))}
     <link rel="icon" type="image/svg+xml" href={`${sitePath(import.meta.env.BASE_URL)}${FAVICON_FILE}`} />
     <meta property="og:type" content={OPEN_GRAPH_TYPE} />
     <meta property="og:site_name" content={meta.siteName} />
@@ -39,9 +40,11 @@ const fontPreload = meta.fontSubsets.map((subset) => ({ subset }));
     <meta property="og:image" content={meta.shareImage} />
     <meta property="og:image:alt" content={meta.shareImageAlt} />
     <meta name="twitter:card" content={TWITTER_CARD} />
-    <Font cssVariable={BRAND_FONT_VARIABLE} preload={fontPreload} />
+    <Font cssVariable={BRAND_FONT_VARIABLE} preload />
     {structuredData !== null && <script type="application/ld+json" set:html={scriptJson(structuredData)} />}
-    <script is:inline>document.documentElement.classList.replace('no-js', 'js');</script>
+    <script is:inline>
+      document.documentElement.classList.replace('no-js', 'js');
+    </script>
   </head>
   <body>
     <slot />

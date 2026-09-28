@@ -18,33 +18,31 @@ const containerRole = landmark ? undefined : 'group';
 
 <Container class:list={['language-switch', { compact }]} aria-label={label} role={containerRole}>
   <ul>
-    {
-      options.map((option) => {
-        const isCurrent = option.code === current;
-        return (
-          <li>
-            <a
-              href={option.path}
-              lang={option.code}
-              hreflang={option.code}
-              aria-current={isCurrent ? 'page' : undefined}
-              data-language-link
-              data-language={option.code}
-              data-path={option.path}
-              data-storage-key={storageKey}
-              data-analytics-click={isCurrent ? undefined : ANALYTICS_EVENT.languageSwitch}
-              data-analytics-param-from={isCurrent ? undefined : current}
-              data-analytics-param-to={isCurrent ? undefined : option.code}
-            >
-              <span class="language-name">{option.name}</span>
-              <span class="language-short" aria-hidden="true">
-                {option.shortName}
-              </span>
-            </a>
-          </li>
-        );
-      })
-    }
+    {options.map((option) => {
+      const isCurrent = option.code === current;
+      return (
+        <li>
+          <a
+            href={option.path}
+            lang={option.code}
+            hreflang={option.code}
+            aria-current={isCurrent ? 'page' : undefined}
+            data-language-link
+            data-language={option.code}
+            data-path={option.path}
+            data-storage-key={storageKey}
+            data-analytics-click={isCurrent ? undefined : ANALYTICS_EVENT.languageSwitch}
+            data-analytics-param-from={isCurrent ? undefined : current}
+            data-analytics-param-to={isCurrent ? undefined : option.code}
+          >
+            <span class="language-name">{option.name}</span>
+            <span class="language-short" aria-hidden="true">
+              {option.shortName}
+            </span>
+          </a>
+        </li>
+      );
+    })}
   </ul>
 </Container>
 

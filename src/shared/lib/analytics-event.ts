@@ -31,11 +31,7 @@ export function isAnalyticsEventName(value: string | undefined): value is Analyt
   return value !== undefined && EVENT_NAMES.includes(value);
 }
 
-export function analyticsPayload(
-  name: AnalyticsEventName,
-  params: AnalyticsParams,
-  context: AnalyticsContext,
-): AnalyticsParams {
+export function analyticsPayload(name: AnalyticsEventName, params: AnalyticsParams, context: AnalyticsContext): AnalyticsParams {
   return {
     ...params,
     event: name,

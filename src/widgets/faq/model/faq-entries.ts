@@ -105,7 +105,5 @@ export function faqEntries(config: SiteConfig, say: Translate, language: string)
     [9, say('faq.9.q'), originalityAnswer(context)],
     [10, say('faq.10.q'), scheduleAnswer(context, 'faq.10.a')],
   ];
-  return answers
-    .map(([number, question, answer]) => ({ number, question, answer }))
-    .filter((entry) => entry.answer.length > 0);
+  return answers.map(([number, question, answer]) => ({ number, question, answer })).filter((entry) => entry.answer.length > 0);
 }

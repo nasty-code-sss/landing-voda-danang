@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  brandsWithTap,
-  EmptyBrandListError,
-  exampleBrand,
-  lowestPrice,
-} from '../../../../../src/entities/brand/model/brand';
+import { brandsWithTap, EmptyBrandListError, exampleBrand, lowestPrice } from '../../../../../src/entities/brand/model/brand';
 import { brandsFromConfig } from '../../../../../src/features/order-builder/model/builder-data';
 import { configFixture } from '../../../../fixtures/site-config-fixture';
 

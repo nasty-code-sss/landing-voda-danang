@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { parse } from 'yaml';
 import { assertDictionariesComplete, parseDictionary, type Dictionaries } from '../i18n/dictionary';
 import { mergeConfigLayers } from './merge-config-layers';
@@ -46,12 +46,16 @@ function loadDictionaries(projectRoot: string, languages: readonly string[]): Di
   );
 }
 
-export function loadSettings(projectRoot: string, appEnvironment: string | undefined): Settings {
+function readOverlayFile(projectRoot: string, overlayFile: string | undefined): unknown {
+  return overlayFile === undefined || overlayFile === '' ? {} : readYamlFile(resolve(projectRoot, overlayFile));
+}
+
+export function loadSettings(projectRoot: string, appEnvironment: string | undefined, overlayFile?: string): Settings {
   const environment = readAppEnvironment(appEnvironment);
   const configDirectory = join(projectRoot, CONFIG_DIRECTORY);
-  const layered = mergeConfigLayers(
+  const layered = [readYamlFile(join(configDirectory, `${environment}.yml`)), readOverlayFile(projectRoot, overlayFile)].reduce(
+    mergeConfigLayers,
     readYamlFile(join(configDirectory, BASE_CONFIG_FILE)),
-    readYamlFile(join(configDirectory, `${environment}.yml`)),
   );
   const config = parseSiteConfig(layered);
   const dictionaries = loadDictionaries(projectRoot, config.languages.supported);

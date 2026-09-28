@@ -35,15 +35,15 @@ const navigation = [
       <span class="logo-tagline">{say('brand.tagline')}</span>
     </a>
     <nav class="site-nav" aria-label={say('nav.label')}>
-      <ul>{navigation.map((item) => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+      <ul>
+        {navigation.map((item) => (
+          <li>
+            <a href={item.href}>{item.label}</a>
+          </li>
+        ))}
+      </ul>
     </nav>
-    <LanguageSwitch
-      current={language}
-      options={languages}
-      label={say('language.switch_label')}
-      storageKey={storageKey}
-      compact
-    />
+    <LanguageSwitch current={language} options={languages} label={say('language.switch_label')} storageKey={storageKey} compact />
     <a
       class="header-order"
       href={anchorHref(PAGE_ANCHOR.order, sectionPath)}
@@ -57,7 +57,13 @@ const navigation = [
         <Icon name="menu" />
       </summary>
       <div class="site-menu-panel">
-        <ul class="site-menu-links">{navigation.map((item) => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+        <ul class="site-menu-links">
+          {navigation.map((item) => (
+            <li>
+              <a href={item.href}>{item.label}</a>
+            </li>
+          ))}
+        </ul>
         <LanguageSwitch
           current={language}
           options={languages}

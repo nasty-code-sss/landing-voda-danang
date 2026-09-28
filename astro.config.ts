@@ -35,6 +35,7 @@ export default defineConfig({
       styles: [...FONT_STYLES],
       subsets: [firstSubset, ...otherSubsets],
       fallbacks: [GENERIC_FALLBACK],
+      optimizedFallbacks: false,
       options: { package: design.font.package },
     },
   ],

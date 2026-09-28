@@ -28,32 +28,30 @@ const withoutTap = brandsWithTap(brands, false);
 const withTap = brandsWithTap(brands, true);
 ---
 
-{
-  config.pumps.length > 0 && withoutTap.length > 0 && (
-    <PageSection
-      anchor={PAGE_ANCHOR.pump}
-      title={say('pump.title')}
-      intro={fillTemplate(say('pump.intro'), { brands: namesOf(false) })}
-    >
-      <ul class="pumps">
-        {config.pumps.map((pump) => (
-          <li class="pump">
-            <span class="pump-icon">
-              <Icon name="plug" size={28} />
-            </span>
-            <span class="pump-name">{say(`pump.${pump.id}`)}</span>
-            <span class="pump-price">{formatMoney(pump.price, language, config.money.currency)}</span>
-          </li>
-        ))}
-      </ul>
-      <p class="pump-note">{say('pump.add_to_order')}</p>
-      {withTap.length > 0 && <p class="pump-note">{fillTemplate(say('pump.tap_brands'), { brands: namesOf(true) })}</p>}
-      <a class="button button-secondary" href={anchorHref(PAGE_ANCHOR.order)}>
-        {say('pump.go_to_order')}
-      </a>
-    </PageSection>
-  )
-}
+{config.pumps.length > 0 && withoutTap.length > 0 && (
+  <PageSection
+    anchor={PAGE_ANCHOR.pump}
+    title={say('pump.title')}
+    intro={fillTemplate(say('pump.intro'), { brands: namesOf(false) })}
+  >
+    <ul class="pumps">
+      {config.pumps.map((pump) => (
+        <li class="pump">
+          <span class="pump-icon">
+            <Icon name="plug" size={28} />
+          </span>
+          <span class="pump-name">{say(`pump.${pump.id}`)}</span>
+          <span class="pump-price">{formatMoney(pump.price, language, config.money.currency)}</span>
+        </li>
+      ))}
+    </ul>
+    <p class="pump-note">{say('pump.add_to_order')}</p>
+    {withTap.length > 0 && <p class="pump-note">{fillTemplate(say('pump.tap_brands'), { brands: namesOf(true) })}</p>}
+    <a class="button button-secondary" href={anchorHref(PAGE_ANCHOR.order)}>
+      {say('pump.go_to_order')}
+    </a>
+  </PageSection>
+)}
 
 <style>
   .pumps {

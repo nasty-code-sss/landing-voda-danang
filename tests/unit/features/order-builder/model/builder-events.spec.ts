@@ -18,7 +18,9 @@ describe('builder events', () => {
   });
 
   it('orderSummaryDetail_withoutTotal_givesNullTotal', () => {
-    expect(orderSummaryDetail(new CustomEvent(ORDER_BUILDER_EVENT.summary, { detail: { total: null } }))).toEqual({ total: null });
+    expect(orderSummaryDetail(new CustomEvent(ORDER_BUILDER_EVENT.summary, { detail: { total: null } }))).toEqual({
+      total: null,
+    });
     expect(orderSummaryDetail(new CustomEvent(ORDER_BUILDER_EVENT.summary, { detail: { total: '₫300,000' } }))).toEqual({
       total: '₫300,000',
     });

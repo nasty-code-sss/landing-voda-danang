@@ -38,16 +38,14 @@ const facts = [
       <h1 id="hero-title">{say('hero.title')}</h1>
       <p class="hero-subtitle">{fillTemplate(say('hero.subtitle'), { price: fromPrice })}</p>
       <ul class="hero-facts">
-        {
-          facts
-            .filter((fact) => fact.shown)
-            .map((fact) => (
-              <li>
-                <Icon name={fact.icon} />
-                <span>{fact.text}</span>
-              </li>
-            ))
-        }
+        {facts
+          .filter((fact) => fact.shown)
+          .map((fact) => (
+            <li>
+              <Icon name={fact.icon} />
+              <span>{fact.text}</span>
+            </li>
+          ))}
       </ul>
       <div class="hero-actions">
         <a
@@ -58,7 +56,9 @@ const facts = [
         >
           {say('hero.order')}
         </a>
-        <a class="button button-secondary" href={anchorHref(PAGE_ANCHOR.deposit)}>{say('hero.deposit')}</a>
+        <a class="button button-secondary" href={anchorHref(PAGE_ANCHOR.deposit)}>
+          {say('hero.deposit')}
+        </a>
       </div>
     </div>
     <div class="hero-art" aria-hidden="true" set:html={BOTTLE_SCENE_SVG} />

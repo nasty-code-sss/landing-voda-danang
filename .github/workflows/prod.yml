@@ -1,0 +1,105 @@
+name: prod
+
+on:
+  workflow_run:
+    workflows: [stage]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prod
+  cancel-in-progress: false
+
+env:
+  SITE_ARCHIVE: site.tar.gz
+
+jobs:
+  deploy:
+    name: G3 deploy the stage artifact to prod
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+      actions: read
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Version tag is new
+        id: version
+        run: |
+          tag="v$(node -p "require('./package.json').version")"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" > /dev/null; then
+            echo "::error::$tag is already released, raise the version in package.json before going to prod"
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: site
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Unpack the artifact checked on stage
+        run: |
+          sha256sum -c "$SITE_ARCHIVE.sha256"
+          mkdir -p site
+          tar -xzf "$SITE_ARCHIVE" -C site
+          echo "Deploying $(cat "$SITE_ARCHIVE.sha256") checked by stage run ${{ github.event.workflow_run.id }}" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+      - uses: actions/deploy-pages@v5
+        id: deployment
+
+      - name: Tag and release the artifact
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          gh release create "$TAG" "$SITE_ARCHIVE" "$SITE_ARCHIVE.sha256" \
+            --target "$SOURCE_SHA" \
+            --title "$TAG" \
+            --notes "Site artifact from stage run ${{ github.event.workflow_run.id }}, rollback: run the rollback workflow with this tag"
+
+  smoke:
+    name: Smoke on prod
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      E2E_BASE_URL: ${{ needs.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Browser for smoke
+        run: npx playwright install --with-deps chromium
+
+      - name: Published site is up
+        run: npm run smoke

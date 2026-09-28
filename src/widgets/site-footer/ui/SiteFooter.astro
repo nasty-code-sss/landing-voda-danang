@@ -54,16 +54,14 @@ const schedule = capitalizeFirst(
             {config.contacts.phone}
           </a>
         </li>
-        {
-          messengers.map((messenger) => (
-            <li>
-              <Icon name="chat" />
-              <a href={chatLink(messenger)} target="_blank" rel="noopener">
-                {messenger.label}
-              </a>
-            </li>
-          ))
-        }
+        {messengers.map((messenger) => (
+          <li>
+            <Icon name="chat" />
+            <a href={chatLink(messenger)} target="_blank" rel="noopener">
+              {messenger.label}
+            </a>
+          </li>
+        ))}
         <li>
           <Icon name="pin" />
           <span lang={localLanguage}>{[config.warehouse.street, config.warehouse.city].join(ADDRESS_SEPARATOR)}</span>
@@ -85,7 +83,11 @@ const schedule = capitalizeFirst(
     <section class="footer-block" aria-labelledby="footer-legal-title">
       <h2 id="footer-legal-title">{say('footer.documents')}</h2>
       <ul class="footer-links">
-        {legalLinks.map((link) => <li><a href={anchorHref(link.anchor, legalPath)}>{link.label}</a></li>)}
+        {legalLinks.map((link) => (
+          <li>
+            <a href={anchorHref(link.anchor, legalPath)}>{link.label}</a>
+          </li>
+        ))}
       </ul>
       <LanguageSwitch
         current={language}

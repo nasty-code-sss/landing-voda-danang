@@ -37,43 +37,45 @@ const theses = [say('deposit.thesis.1'), say('deposit.thesis.2'), say('deposit.t
 
 <PageSection anchor={PAGE_ANCHOR.deposit} title={say('deposit.title')} intro={say('deposit.intro')}>
   <div class="deposit">
-    <ol class="theses">{theses.map((thesis) => <li>{thesis}</li>)}</ol>
+    <ol class="theses">
+      {theses.map((thesis) => (
+        <li>{thesis}</li>
+      ))}
+    </ol>
     <figure class="example">
       <figcaption>{exampleName}</figcaption>
       <div class="example-columns">
-        {
-          columns.map((column) => (
-            <div class:list={['example-column', { featured: column.withDeposit }]}>
-              <h3>{column.title}</h3>
-              <dl>
-                <div class="example-row">
-                  <dt>{say('deposit.example.water')}</dt>
-                  <dd>
-                    <span class="example-math">{multiply(example.brand.price)}</span>
-                    <span>{money(column.total.water)}</span>
-                  </dd>
-                </div>
-                <div class="example-row">
-                  <dt>{say('deposit.example.deposit')}</dt>
-                  <dd>
-                    {column.withDeposit ? (
-                      <>
-                        <span class="example-math">{multiply(example.brand.deposit)}</span>
-                        <span>{money(column.total.deposit)}</span>
-                      </>
-                    ) : (
-                      <span>{say('deposit.example.no_deposit')}</span>
-                    )}
-                  </dd>
-                </div>
-                <div class="example-row example-total">
-                  <dt>{say('deposit.example.total')}</dt>
-                  <dd>{money(column.total.total)}</dd>
-                </div>
-              </dl>
-            </div>
-          ))
-        }
+        {columns.map((column) => (
+          <div class:list={['example-column', { featured: column.withDeposit }]}>
+            <h3>{column.title}</h3>
+            <dl>
+              <div class="example-row">
+                <dt>{say('deposit.example.water')}</dt>
+                <dd>
+                  <span class="example-math">{multiply(example.brand.price)}</span>
+                  <span>{money(column.total.water)}</span>
+                </dd>
+              </div>
+              <div class="example-row">
+                <dt>{say('deposit.example.deposit')}</dt>
+                <dd>
+                  {column.withDeposit ? (
+                    <>
+                      <span class="example-math">{multiply(example.brand.deposit)}</span>
+                      <span>{money(column.total.deposit)}</span>
+                    </>
+                  ) : (
+                    <span>{say('deposit.example.no_deposit')}</span>
+                  )}
+                </dd>
+              </div>
+              <div class="example-row example-total">
+                <dt>{say('deposit.example.total')}</dt>
+                <dd>{money(column.total.total)}</dd>
+              </div>
+            </dl>
+          </div>
+        ))}
       </div>
     </figure>
     <p class="brand-note">{say('deposit.same_brand')}</p>

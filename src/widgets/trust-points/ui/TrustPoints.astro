@@ -21,25 +21,23 @@ const PRESENTATION = {
 const points = promisedTrustPoints(config.trust);
 ---
 
-{
-  points.length > 0 && (
-    <PageSection anchor={PAGE_ANCHOR.trust} title={say('trust.title')} intro={say('trust.intro')} tone="tinted">
-      <ul class="trust-points">
-        {points.map((point) => (
-          <li class="trust-point">
-            <span class="trust-icon">
-              <Icon name={PRESENTATION[point].icon} size={28} />
-            </span>
-            <div>
-              <h3>{say(`trust.${PRESENTATION[point].key}.title`)}</h3>
-              <p>{say(`trust.${PRESENTATION[point].key}.text`)}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </PageSection>
-  )
-}
+{points.length > 0 && (
+  <PageSection anchor={PAGE_ANCHOR.trust} title={say('trust.title')} intro={say('trust.intro')} tone="tinted">
+    <ul class="trust-points">
+      {points.map((point) => (
+        <li class="trust-point">
+          <span class="trust-icon">
+            <Icon name={PRESENTATION[point].icon} size={28} />
+          </span>
+          <div>
+            <h3>{say(`trust.${PRESENTATION[point].key}.title`)}</h3>
+            <p>{say(`trust.${PRESENTATION[point].key}.text`)}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </PageSection>
+)}
 
 <style>
   .trust-points {

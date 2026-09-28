@@ -5,7 +5,7 @@ import { faqEntries } from '../../../../../src/widgets/faq/model/faq-entries';
 import { configFixture, projectDictionaries, rawConfigFixture } from '../../../../fixtures/site-config-fixture';
 
 const dictionaries = projectDictionaries();
-const NO_BREAK_SPACES = /[  ]/g;
+const NO_BREAK_SPACES = /[\u00A0\u202F]/g;
 const answerOf = (entries: ReturnType<typeof faqEntries>, number: number) =>
   entries.find((entry) => entry.number === number)?.answer.replace(NO_BREAK_SPACES, ' ');
 

@@ -59,7 +59,11 @@ export function loadShareFonts(projectRoot: string, source: ShareFontSource): Sh
   return { stack: source.subsets.map(familyOf).join(FONT_STACK_SEPARATOR), faces };
 }
 
-export async function renderSharePng(element: ShareElement, size: ShareImageSize, fonts: ShareFonts): Promise<Uint8Array<ArrayBuffer>> {
+export async function renderSharePng(
+  element: ShareElement,
+  size: ShareImageSize,
+  fonts: ShareFonts,
+): Promise<Uint8Array<ArrayBuffer>> {
   const svg = await satori(element as unknown as SatoriInput, {
     width: size.width,
     height: size.height,

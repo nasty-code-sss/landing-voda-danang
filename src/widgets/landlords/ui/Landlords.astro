@@ -27,35 +27,31 @@ const points = [say('landlords.point.1'), say('landlords.point.2'), say('landlor
     data-copied-note={say('landlords.copied')}
   >
     <ul class="landlord-points">
-      {
-        points.map((point) => (
-          <li>
-            <Icon name="home" />
-            <span>{point}</span>
-          </li>
-        ))
-      }
+      {points.map((point) => (
+        <li>
+          <Icon name="home" />
+          <span>{point}</span>
+        </li>
+      ))}
     </ul>
     <div class="landlord-contact">
       <p class="landlord-cta">{say('landlords.cta')}</p>
       <ul class="landlord-links">
-        {
-          links.map((link) => (
-            <li>
-              <a
-                class="button button-secondary"
-                href={link.href}
-                target="_blank"
-                rel="noopener"
-                data-landlord-link
-                data-analytics-click={ANALYTICS_EVENT.landlordClick}
-                data-analytics-param-messenger={link.id}
-              >
-                {link.label}
-              </a>
-            </li>
-          ))
-        }
+        {links.map((link) => (
+          <li>
+            <a
+              class="button button-secondary"
+              href={link.href}
+              target="_blank"
+              rel="noopener"
+              data-landlord-link
+              data-analytics-click={ANALYTICS_EVENT.landlordClick}
+              data-analytics-param-messenger={link.id}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
       </ul>
       <p class="landlord-status" data-landlord-status role="status"></p>
     </div>

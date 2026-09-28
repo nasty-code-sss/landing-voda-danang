@@ -40,25 +40,27 @@ const listTitle = fillTemplate(escapeHtml(say('zone.list_title')), { ward: local
     <div class="zone-text">
       <p class="zone-list-title" set:html={listTitle} />
       <ul class="zone-list">
-        {
-          areas.map((area) => (
-            <li>
-              <Icon name="pin" />
-              <span>
-                <strong set:html={area.name} />
-                {area.former !== null && <span class="zone-former" set:html={` (${area.former})`} />}
-              </span>
-            </li>
-          ))
-        }
+        {areas.map((area) => (
+          <li>
+            <Icon name="pin" />
+            <span>
+              <strong set:html={area.name} />
+              {area.former !== null && <span class="zone-former" set:html={` (${area.former})`} />}
+            </span>
+          </li>
+        ))}
       </ul>
       <dl class="zone-hours">
         <div>
-          <dt><Icon name="clock" /> {say('zone.hours')}</dt>
+          <dt>
+            <Icon name="clock" /> {say('zone.hours')}
+          </dt>
           <dd>{schedule}</dd>
         </div>
         <div>
-          <dt><Icon name="scooter" /> {say('zone.same_day')}</dt>
+          <dt>
+            <Icon name="scooter" /> {say('zone.same_day')}
+          </dt>
           <dd>{fillTemplate(say('zone.same_day_text'), { time: config.delivery.sameDayUntil })}</dd>
         </div>
       </dl>

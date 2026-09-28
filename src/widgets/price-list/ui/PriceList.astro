@@ -21,36 +21,34 @@ const brands = brandsFromConfig(config);
 
 <PageSection anchor={PAGE_ANCHOR.prices} title={say('prices.title')} intro={say('prices.intro')} tone="tinted">
   <ul class="price-cards">
-    {
-      brands.map((brand) => (
-        <li class="price-card">
-          <h3 class="price-card-name">{brand.name}</h3>
-          <p class="price-card-type">
-            {say(`water.${brand.waterType}`)}, {formatVolume(brand.volumeLiters, language)} {say('message.liter_unit')}
-          </p>
-          <p class="price-card-price">{fillTemplate(say('prices.per_bottle'), { amount: money(brand.price) })}</p>
-          <dl class="price-card-facts">
-            <div>
-              <dt>{say('prices.deposit')}</dt>
-              <dd>{money(brand.deposit)}</dd>
-            </div>
-            <div>
-              <dt>{say('prices.tap')}</dt>
-              <dd>{brand.hasTap ? say('prices.tap.yes') : say('prices.tap.no')}</dd>
-            </div>
-          </dl>
-          <a
-            class="button button-primary price-card-choose"
-            href={anchorHref(PAGE_ANCHOR.order)}
-            aria-label={fillTemplate(say('prices.choose_brand'), { brand: brand.name })}
-            data-choose-brand={brand.id}
-          >
-            <Icon name="check" />
-            {say('prices.choose')}
-          </a>
-        </li>
-      ))
-    }
+    {brands.map((brand) => (
+      <li class="price-card">
+        <h3 class="price-card-name">{brand.name}</h3>
+        <p class="price-card-type">
+          {say(`water.${brand.waterType}`)}, {formatVolume(brand.volumeLiters, language)} {say('message.liter_unit')}
+        </p>
+        <p class="price-card-price">{fillTemplate(say('prices.per_bottle'), { amount: money(brand.price) })}</p>
+        <dl class="price-card-facts">
+          <div>
+            <dt>{say('prices.deposit')}</dt>
+            <dd>{money(brand.deposit)}</dd>
+          </div>
+          <div>
+            <dt>{say('prices.tap')}</dt>
+            <dd>{brand.hasTap ? say('prices.tap.yes') : say('prices.tap.no')}</dd>
+          </div>
+        </dl>
+        <a
+          class="button button-primary price-card-choose"
+          href={anchorHref(PAGE_ANCHOR.order)}
+          aria-label={fillTemplate(say('prices.choose_brand'), { brand: brand.name })}
+          data-choose-brand={brand.id}
+        >
+          <Icon name="check" />
+          {say('prices.choose')}
+        </a>
+      </li>
+    ))}
   </ul>
 </PageSection>
 

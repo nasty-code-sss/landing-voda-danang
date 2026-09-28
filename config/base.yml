@@ -131,10 +131,6 @@ design:
     family: Manrope Variable
     weights: "200 800"
     subsets: [latin, latin-ext, vietnamese, cyrillic]
-    preload:
-      en: [latin]
-      vi: [latin, vietnamese]
-      ru: [latin, cyrillic]
   share_image:
     font_package: "@fontsource/manrope"
     font_weights: [600, 800]

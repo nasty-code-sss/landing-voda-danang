@@ -1,0 +1,79 @@
+name: pr
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  E2E_BASE_URL: http://127.0.0.1:4322/landing-voda-danang/
+  E2E_SITE_DIR: dist
+
+jobs:
+  g1:
+    name: G1 pull request
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Format
+        run: npm run format:check
+
+      - name: Lint and no comments
+        run: npm run lint
+
+      - name: Types
+        run: npm run check
+
+      - name: Secrets
+        run: npm run secrets
+
+      - name: Vulnerable dependencies
+        run: npm run audit:deps
+
+      - name: Unit tests with coverage floor
+        run: npm run test:coverage -- --coverage.reportsDirectory=coverage/head
+
+      - name: Coverage is not lower than in main
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git worktree add --detach ../base "$BASE_SHA"
+          ln -s "$PWD/node_modules" ../base/node_modules
+          (cd ../base && npx vitest run --config "$GITHUB_WORKSPACE/vitest.config.ts" --coverage \
+            --coverage.reportsDirectory="$GITHUB_WORKSPACE/coverage/base" \
+            --coverage.thresholds.statements=0 --coverage.thresholds.branches=0 \
+            --coverage.thresholds.functions=0 --coverage.thresholds.lines=0)
+          node scripts/coverage/compare-with-base.ts coverage/base/coverage-summary.json coverage/head/coverage-summary.json
+
+      - name: Build with prod config
+        run: npm run build:prod
+
+      - name: Browser for e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E on the pull request build
+        run: npm run e2e
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report-pr
+          path: playwright-report/
+          retention-days: 14

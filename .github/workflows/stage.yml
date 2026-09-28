@@ -1,0 +1,140 @@
+name: stage
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stage
+  cancel-in-progress: false
+
+env:
+  E2E_BASE_URL: http://127.0.0.1:4322/landing-voda-danang/
+  SITE_ARCHIVE: site.tar.gz
+
+jobs:
+  build:
+    name: Build the artifact once
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build with prod config
+        run: npm run build:prod
+
+      - name: Pack and fingerprint
+        run: |
+          tar -czf "$SITE_ARCHIVE" -C dist .
+          sha256sum "$SITE_ARCHIVE" > "$SITE_ARCHIVE.sha256"
+          echo "Artifact $(cat "$SITE_ARCHIVE.sha256") from ${GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: site
+          path: |
+            ${{ env.SITE_ARCHIVE }}
+            ${{ env.SITE_ARCHIVE }}.sha256
+          retention-days: 30
+
+  e2e:
+    name: G2 e2e and Lighthouse on stage
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      E2E_SITE_DIR: stage-site
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: site
+
+      - name: Unpack the same artifact
+        run: |
+          sha256sum -c "$SITE_ARCHIVE.sha256"
+          mkdir -p "$E2E_SITE_DIR"
+          tar -xzf "$SITE_ARCHIVE" -C "$E2E_SITE_DIR"
+
+      - name: Browser for e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: All scenarios of the brief
+        run: npm run e2e
+
+      - name: Lighthouse on a phone
+        run: npm run lighthouse
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report-stage
+          path: playwright-report/
+          retention-days: 14
+
+  rollback:
+    name: G2 previous version comes back
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      E2E_SITE_DIR: previous-site
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Previous release
+        id: previous
+        run: |
+          tag=$(gh release list --limit 1 --json tagName --jq '.[0].tagName // ""')
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if [ -z "$tag" ]; then
+            echo "No release yet, there is nothing to roll back to" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/setup-node@v7
+        if: steps.previous.outputs.tag != ''
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - if: steps.previous.outputs.tag != ''
+        run: npm ci
+
+      - name: Unpack the previous release
+        if: steps.previous.outputs.tag != ''
+        env:
+          TAG: ${{ steps.previous.outputs.tag }}
+        run: |
+          gh release download "$TAG" --pattern "$SITE_ARCHIVE*"
+          sha256sum -c "$SITE_ARCHIVE.sha256"
+          mkdir -p "$E2E_SITE_DIR"
+          tar -xzf "$SITE_ARCHIVE" -C "$E2E_SITE_DIR"
+          echo "Rollback target $TAG unpacked and served" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Browser for smoke
+        if: steps.previous.outputs.tag != ''
+        run: npx playwright install --with-deps chromium
+
+      - name: Smoke on the previous release
+        if: steps.previous.outputs.tag != ''
+        run: npm run smoke

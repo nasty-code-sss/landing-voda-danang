@@ -3,10 +3,14 @@ import { analyticsPayload, isAnalyticsEventName } from '../../../../src/shared/l
 
 describe('analyticsPayload', () => {
   it('analyticsPayload_fromQrSticker_addsLanguageAndSource', () => {
-    const payload = analyticsPayload('builder_brand', { brand: 'biwa' }, {
-      language: 'ru',
-      query: new URLSearchParams('mode=refill&utm_source=qr'),
-    });
+    const payload = analyticsPayload(
+      'builder_brand',
+      { brand: 'biwa' },
+      {
+        language: 'ru',
+        query: new URLSearchParams('mode=refill&utm_source=qr'),
+      },
+    );
 
     expect(payload).toEqual({ brand: 'biwa', event: 'builder_brand', language: 'ru', source: 'qr' });
   });

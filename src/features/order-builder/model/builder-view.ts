@@ -1,11 +1,6 @@
 import { findBrand, type Brand } from '../../../entities/brand/model/brand';
 import { isSameDayDeliveryOpen } from '../../../entities/order/model/delivery-day';
-import {
-  calculateTotal,
-  findMissingParts,
-  isPumpOffered,
-  type Order,
-} from '../../../entities/order/model/order';
+import { calculateTotal, findMissingParts, isPumpOffered, type Order } from '../../../entities/order/model/order';
 import { composeOrderMessage } from '../../../entities/order/model/order-message';
 import { findPump } from '../../../entities/pump/model/pump';
 import { mapSearchLink } from '../../../shared/api/map-link';
@@ -83,8 +78,7 @@ function composeMessage(order: Order, data: BuilderData): string {
   const coordinates = order.deliveryPoint.coordinates;
   return composeOrderMessage({
     order,
-    locationLink:
-      coordinates === null ? null : mapSearchLink(data.mapsSearchUrl, coordinates, data.coordinateDecimals),
+    locationLink: coordinates === null ? null : mapSearchLink(data.mapsSearchUrl, coordinates, data.coordinateDecimals),
     currency: data.currency,
     primary: data.message,
     copy: data.messageCopy,

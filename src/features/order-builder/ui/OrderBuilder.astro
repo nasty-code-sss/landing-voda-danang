@@ -1,11 +1,13 @@
 ---
-import { chatLink, phoneCallLink } from '../../../shared/api/messenger-link';
+import { chatLink, CONTACT_CARD_MESSENGER, opensMessengerApp, phoneCallLink } from '../../../shared/api/messenger-link';
 import type { SiteConfig } from '../../../shared/config/site-config';
 import { dictionaryFor, text, type Dictionaries } from '../../../shared/i18n/dictionary';
 import { fillTemplate } from '../../../shared/i18n/template';
 import { formatMoney, formatVolume } from '../../../shared/i18n/number-format';
 import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
 import { PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
+import WeChatContact from '../../../shared/ui/WeChatContact.astro';
+import { weChatContactTexts } from '../../../shared/ui/wechat-contact-texts';
 import { createBuilderData } from '../model/builder-data';
 import { BUILDER_FIELD, NO_PUMP_VALUE } from '../model/builder-state';
 import { serializeBuilderData } from '../model/serialize-builder-data';
@@ -24,6 +26,7 @@ const money = (amount: number) => formatMoney(amount, language, data.currency);
 const laneWord = `<span lang="vi">${say('address.lane_word')}</span>`;
 const [firstPayment] = data.payments;
 const CALL_BLOCK = 'builder';
+const wechat = data.messengers.find((messenger) => messenger.id === CONTACT_CARD_MESSENGER);
 ---
 
 <section class="builder" id={PAGE_ANCHOR.order} aria-labelledby="builder-title" data-order-builder>
@@ -195,13 +198,21 @@ const CALL_BLOCK = 'builder';
   <div class="send">
     <h3 class="send-title">{say('builder.send.title')}</h3>
     <ul class="send-links">
-      {data.messengers.map((messenger) => (
-        <li>
-          <a class="send-link" href={chatLink(messenger)} target="_blank" rel="noopener" data-send-link={messenger.id}>
-            {messenger.label}
-          </a>
-        </li>
-      ))}
+      {data.messengers.map((messenger) =>
+        opensMessengerApp(messenger) ? (
+          <li>
+            <a class="send-link" href={chatLink(messenger)} target="_blank" rel="noopener" data-send-link={messenger.id}>
+              {messenger.label}
+            </a>
+          </li>
+        ) : (
+          <li>
+            <a class="send-link" href={chatLink(messenger)} data-send-link={messenger.id} data-contact-card-link>
+              {messenger.label}
+            </a>
+          </li>
+        ),
+      )}
       <li>
         <a
           class="call-link"
@@ -213,6 +224,27 @@ const CALL_BLOCK = 'builder';
         </a>
       </li>
     </ul>
+    {wechat !== undefined && (
+      <div class="contact-card" data-contact-card hidden>
+        <p class="contact-card-title">{say('wechat.card.title')}</p>
+        <ol class="contact-card-steps">
+          <li>
+            <div class="contact-card-step">
+              <span>{say('wechat.step.add')}</span>
+              <WeChatContact wechatId={wechat.contact} qrText={config.contacts.wechatQr} texts={weChatContactTexts(say)} />
+            </div>
+          </li>
+          <li>
+            <div class="contact-card-step">
+              <span>{say('wechat.step.paste')}</span>
+              <button type="button" class="button button-secondary" data-copy-order>
+                {say('wechat.copy_order')}
+              </button>
+            </div>
+          </li>
+        </ol>
+      </div>
+    )}
     <div class="missing" data-missing data-requires-js>
       <p class="missing-title">{say('builder.missing.title')}</p>
       <ul class="missing-list" data-missing-list></ul>
@@ -507,6 +539,33 @@ const CALL_BLOCK = 'builder';
   .call-link {
     border: 2px solid var(--color-sea);
     color: var(--color-sea-dark);
+  }
+
+  .contact-card {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+    padding: var(--gap);
+    border-radius: var(--radius);
+    background: var(--color-foam);
+  }
+
+  .contact-card-title {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .contact-card-steps {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  .contact-card-step {
+    display: grid;
+    justify-items: start;
+    gap: 8px;
   }
 
   .missing {

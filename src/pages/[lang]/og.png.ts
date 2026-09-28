@@ -47,7 +47,7 @@ export const GET: APIRoute = async ({ params }) => {
       : loadScriptFonts(process.cwd(), {
           packageName: scriptFontPackage,
           weights: shareImage.fontWeights,
-          text: [texts.tagline, texts.title, texts.price].join(''),
+          text: [texts.tagline, texts.title, texts.price, ...texts.messengers].join(''),
         });
   const fonts = combineShareFonts(baseFonts, scriptFonts);
   const card = shareCard({ ...texts, fontStack: fonts.stack, size });

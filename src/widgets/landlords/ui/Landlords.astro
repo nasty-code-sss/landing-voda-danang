@@ -42,8 +42,8 @@ const points = [say('landlords.point.1'), say('landlords.point.2'), say('landlor
             <a
               class="button button-secondary"
               href={link.href}
-              target="_blank"
-              rel="noopener"
+              target={link.external ? '_blank' : undefined}
+              rel={link.external ? 'noopener' : undefined}
               data-landlord-link
               data-analytics-click={ANALYTICS_EVENT.landlordClick}
               data-analytics-param-messenger={link.id}

@@ -3,15 +3,17 @@ import { describeSchedule } from '../../../entities/delivery/model/delivery-sche
 import { messengersFor } from '../../../features/order-builder/model/builder-data';
 import type { LanguageOption } from '../../../features/language-switch/model/language-options';
 import LanguageSwitch from '../../../features/language-switch/ui/LanguageSwitch.astro';
-import { chatLink, phoneCallLink } from '../../../shared/api/messenger-link';
+import { chatLink, opensMessengerApp, phoneCallLink } from '../../../shared/api/messenger-link';
 import type { SiteConfig } from '../../../shared/config/site-config';
 import { dictionaryFor, translator, type Dictionaries, type Translate } from '../../../shared/i18n/dictionary';
 import { capitalizeFirst } from '../../../shared/i18n/list-format';
 import { fillTemplate } from '../../../shared/i18n/template';
 import { ANALYTICS_EVENT } from '../../../shared/lib/analytics-event';
-import { anchorHref, LEGAL_ANCHOR } from '../../../shared/lib/page-anchor';
+import { anchorHref, LEGAL_ANCHOR, PAGE_ANCHOR } from '../../../shared/lib/page-anchor';
 import { localizedPath, SITE_ROUTE } from '../../../shared/lib/site-route';
 import Icon from '../../../shared/ui/Icon.astro';
+import WeChatContact from '../../../shared/ui/WeChatContact.astro';
+import { weChatContactTexts } from '../../../shared/ui/wechat-contact-texts';
 
 interface Props {
   config: SiteConfig;
@@ -54,14 +56,24 @@ const schedule = capitalizeFirst(
             {config.contacts.phone}
           </a>
         </li>
-        {messengers.map((messenger) => (
-          <li>
-            <Icon name="chat" />
-            <a href={chatLink(messenger)} target="_blank" rel="noopener">
-              {messenger.label}
-            </a>
-          </li>
-        ))}
+        {messengers.map((messenger) =>
+          opensMessengerApp(messenger) ? (
+            <li>
+              <Icon name="chat" />
+              <a href={chatLink(messenger)} target="_blank" rel="noopener">
+                {messenger.label}
+              </a>
+            </li>
+          ) : (
+            <li id={PAGE_ANCHOR.wechat} class="footer-contact-card">
+              <Icon name="chat" />
+              <div class="footer-contact-card-body">
+                <span>{messenger.label}</span>
+                <WeChatContact wechatId={messenger.contact} qrText={config.contacts.wechatQr} texts={weChatContactTexts(say)} />
+              </div>
+            </li>
+          ),
+        )}
         <li>
           <Icon name="pin" />
           <span lang={localLanguage}>{[config.warehouse.street, config.warehouse.city].join(ADDRESS_SEPARATOR)}</span>
@@ -143,6 +155,20 @@ const schedule = capitalizeFirst(
 
   .footer-contacts :global(.icon) {
     color: #8fcbe9;
+  }
+
+  .footer-contacts .footer-contact-card {
+    align-items: flex-start;
+    padding: 10px 0;
+  }
+
+  .footer-contact-card-body {
+    display: grid;
+    gap: 8px;
+  }
+
+  .footer-contact-card :global(.wechat-status) {
+    color: #8fe3bf;
   }
 
   .footer-links a {

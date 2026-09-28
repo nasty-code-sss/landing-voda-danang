@@ -8,6 +8,7 @@ export const PAGE_ANCHOR = {
   zone: 'zone',
   landlords: 'landlords',
   faq: 'faq',
+  wechat: 'wechat',
 } as const;
 
 export const LEGAL_ANCHOR = {

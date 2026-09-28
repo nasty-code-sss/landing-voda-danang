@@ -12,4 +12,12 @@ describe('languageOptions', () => {
       { code: 'ru', name: 'Русский', shortName: 'RU', flag: 'ru', path: '/landing-voda-danang/ru/' },
     ]);
   });
+
+  it('languageOptions_withLanguageMissingFlag_throwsNamingTheLanguage', () => {
+    const config = configFixture();
+    const { ru: _ru, ...flagsWithoutRussian } = config.languages.flags;
+    const configWithoutRussianFlag = { ...config, languages: { ...config.languages, flags: flagsWithoutRussian } };
+
+    expect(() => languageOptions(configWithoutRussianFlag, projectDictionaries())).toThrow(/no entry for language "ru"/);
+  });
 });

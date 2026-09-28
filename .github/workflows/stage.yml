@@ -2,7 +2,7 @@ name: stage
 
 on:
   push:
-    branches: [main, fix/lighthouse-chrome-ci]
+    branches: [main]
   workflow_dispatch:
 
 permissions:

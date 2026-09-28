@@ -113,6 +113,12 @@ jobs:
             echo "No release yet, there is nothing to roll back to" >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      - name: Code and smoke tests of the previous release
+        if: steps.previous.outputs.tag != ''
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.previous.outputs.tag }}
+
       - uses: actions/setup-node@v7
         if: steps.previous.outputs.tag != ''
         with:

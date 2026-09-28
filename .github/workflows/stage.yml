@@ -2,7 +2,7 @@ name: stage
 
 on:
   push:
-    branches: [main, fix/stage-previous-release-code]
+    branches: [main]
   workflow_dispatch:
 
 permissions:

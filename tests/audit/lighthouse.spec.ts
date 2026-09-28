@@ -8,7 +8,7 @@ import { artifactConfig } from '../fixtures/site-test.ts';
 const MINIMUM_SCORES = { performance: 0.9, accessibility: 0.95, seo: 0.95 };
 const SKIPPED_AUDITS = ['is-crawlable'];
 const SCRIPT_BUDGET_BYTES = 50 * 1024;
-const HEADLESS_CHROME = ['--headless=new'];
+const HEADLESS_CHROME_WITHOUT_SANDBOX = ['--headless=new', '--no-sandbox'];
 const PROFILE_DIRECTORY = 'chrome-profile';
 const AUDIT_TIMEOUT_MS = 120_000;
 const SCRIPT_RESOURCE = 'Script';
@@ -25,7 +25,11 @@ interface NetworkRequest {
 async function auditPage(url: string): Promise<Report> {
   const profile = test.info().outputPath(PROFILE_DIRECTORY);
   mkdirSync(profile, { recursive: true });
-  const chrome = await launch({ chromePath: chromium.executablePath(), chromeFlags: HEADLESS_CHROME, userDataDir: profile });
+  const chrome = await launch({
+    chromePath: chromium.executablePath(),
+    chromeFlags: HEADLESS_CHROME_WITHOUT_SANDBOX,
+    userDataDir: profile,
+  });
   try {
     const result = await lighthouse(url, {
       port: chrome.port,

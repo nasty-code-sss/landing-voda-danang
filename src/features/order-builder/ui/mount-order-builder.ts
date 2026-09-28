@@ -50,6 +50,8 @@ interface BuilderElements {
   readonly missing: HTMLElement;
   readonly missingList: HTMLElement;
   readonly sendStatus: HTMLElement;
+  readonly contactCard: HTMLElement | null;
+  readonly copyOrderButton: HTMLButtonElement | null;
   readonly preview: HTMLElement;
   readonly repeat: HTMLElement;
   readonly repeatButton: HTMLButtonElement;
@@ -93,6 +95,8 @@ function findElements(root: HTMLElement): BuilderElements {
     missing: requireElement(root, '[data-missing]'),
     missingList: requireElement(root, '[data-missing-list]'),
     sendStatus: requireElement(root, '[data-send-status]'),
+    contactCard: root.querySelector<HTMLElement>('[data-contact-card]'),
+    copyOrderButton: root.querySelector<HTMLButtonElement>('[data-copy-order]'),
     preview: requireElement(root, '[data-message-preview]'),
     repeat: requireElement(root, '[data-repeat]'),
     repeatButton: requireElement(root, '[data-repeat-button]'),
@@ -272,6 +276,12 @@ export function mountOrderBuilder(root: HTMLElement): void {
     }
   };
 
+  const copyOrder = () => {
+    copyText(view.message)
+      .then(showSendStatus)
+      .catch(() => showSendStatus(false));
+  };
+
   const send = (link: HTMLAnchorElement) => {
     trackEvent(ANALYTICS_EVENT.sendClick, {
       messenger: link.dataset.sendLink ?? null,
@@ -281,9 +291,13 @@ export function mountOrderBuilder(root: HTMLElement): void {
       total: view.totalAmount,
     });
     rememberOrder();
-    copyText(view.message)
-      .then(showSendStatus)
-      .catch(() => showSendStatus(false));
+    copyOrder();
+  };
+
+  const showContactCard = () => {
+    if (elements.contactCard !== null) {
+      elements.contactCard.hidden = false;
+    }
   };
 
   const offerRepeat = (order: LastOrder) => {
@@ -332,14 +346,25 @@ export function mountOrderBuilder(root: HTMLElement): void {
   }
   elements.geoButton.addEventListener('click', () => void locate());
   for (const link of elements.sendLinks) {
+    const opensContactCard = link.hasAttribute('data-contact-card-link');
     link.addEventListener('click', (event) => {
-      if (!view.ready) {
+      if (!view.ready || opensContactCard) {
         event.preventDefault();
+      }
+      if (!view.ready) {
         return;
       }
       send(link);
+      if (opensContactCard) {
+        showContactCard();
+      }
     });
   }
+  elements.copyOrderButton?.addEventListener('click', () => {
+    if (view.ready) {
+      copyOrder();
+    }
+  });
   document.addEventListener(ORDER_BUILDER_EVENT.chooseBrand, (event) => {
     const detail = chooseBrandDetail(event);
     if (detail !== null) {

@@ -1,6 +1,6 @@
 import { withOperatorCopy } from '../../../entities/order/model/order-message';
 import { messengersFor } from '../../../features/order-builder/model/builder-data';
-import { chatLink } from '../../../shared/api/messenger-link';
+import { chatLink, opensMessengerApp } from '../../../shared/api/messenger-link';
 import type { MessengerId, SiteConfig } from '../../../shared/config/site-config';
 import { dictionaryFor, text, type Dictionaries } from '../../../shared/i18n/dictionary';
 
@@ -10,6 +10,7 @@ export interface LandlordLink {
   readonly id: MessengerId;
   readonly label: string;
   readonly href: string;
+  readonly external: boolean;
 }
 
 export function landlordMessage(config: SiteConfig, dictionaries: Dictionaries, language: string): string {
@@ -24,5 +25,6 @@ export function landlordLinks(config: SiteConfig, dictionaries: Dictionaries, la
     id: messenger.id,
     label: messenger.label,
     href: chatLink(messenger, message),
+    external: opensMessengerApp(messenger),
   }));
 }

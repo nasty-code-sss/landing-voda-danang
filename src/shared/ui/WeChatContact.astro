@@ -1,0 +1,60 @@
+---
+import QrCode from './QrCode.astro';
+import type { WeChatContactTexts } from './wechat-contact-texts';
+
+interface Props {
+  wechatId: string;
+  qrText: string;
+  texts: WeChatContactTexts;
+}
+
+const { wechatId, qrText, texts } = Astro.props;
+---
+
+<div class="wechat-contact" data-wechat-contact data-copied-note={texts.idCopied}>
+  <p class="wechat-id">
+    <span>{texts.idLabel}</span>
+    <strong class="wechat-id-value" data-wechat-id translate="no">
+      {wechatId}
+    </strong>
+  </p>
+  <button type="button" class="button button-secondary" data-wechat-copy data-requires-js>
+    {texts.copyId}
+  </button>
+  <p class="wechat-status" data-wechat-status role="status"></p>
+  <QrCode text={qrText} label={texts.qrLabel} />
+</div>
+
+<script>
+  import { mountWeChatContact } from './mount-wechat-contact';
+
+  document.querySelectorAll<HTMLElement>('[data-wechat-contact]').forEach(mountWeChatContact);
+</script>
+
+<style>
+  .wechat-contact {
+    display: grid;
+    justify-items: start;
+    gap: 8px;
+  }
+
+  .wechat-id {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+  }
+
+  .wechat-id-value {
+    overflow-wrap: anywhere;
+  }
+
+  .wechat-status {
+    margin: 0;
+    color: var(--color-success-ink);
+  }
+
+  .wechat-status:empty {
+    display: none;
+  }
+</style>

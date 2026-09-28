@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { chatLink, phoneCallLink } from '../../../../src/shared/api/messenger-link';
+import { chatLink, opensMessengerApp, phoneCallLink } from '../../../../src/shared/api/messenger-link';
 
-const WHATSAPP = { id: 'whatsapp', baseUrl: 'https://wa.me/', contact: '84000000000' } as const;
-const TELEGRAM = { id: 'telegram', baseUrl: 'https://t.me/', contact: 'mywater_danang_demo' } as const;
-const ZALO = { id: 'zalo', baseUrl: 'https://zalo.me/', contact: '0000000000' } as const;
+const WHATSAPP = { id: 'whatsapp', linkTemplate: 'https://wa.me/{contact}', contact: '84000000000' } as const;
+const TELEGRAM = { id: 'telegram', linkTemplate: 'https://t.me/{contact}', contact: 'mywater_danang_demo' } as const;
+const ZALO = { id: 'zalo', linkTemplate: 'https://zalo.me/{contact}', contact: '0000000000' } as const;
+const KAKAOTALK = { id: 'kakaotalk', linkTemplate: 'https://pf.kakao.com/{contact}/chat', contact: '_mywaterdemo' } as const;
+const WECHAT = { id: 'wechat', linkTemplate: null, contact: 'mywater_danang_demo' } as const;
 
 describe('chatLink', () => {
   it('chatLink_forWhatsappWithText_encodesSpacesAndLineBreaksAsPercent', () => {
@@ -18,8 +20,26 @@ describe('chatLink', () => {
     expect(chatLink(ZALO, 'Order')).toBe('https://zalo.me/0000000000');
   });
 
+  it('chatLink_forKakaoTalkWithText_opensChannelChatWithoutText', () => {
+    expect(chatLink(KAKAOTALK, 'Order')).toBe('https://pf.kakao.com/_mywaterdemo/chat');
+  });
+
+  it('chatLink_forWeChat_pointsToContactCardOnThePage', () => {
+    expect(chatLink(WECHAT, 'Order')).toBe('#wechat');
+  });
+
   it('chatLink_withoutText_opensPlainChat', () => {
     expect(chatLink(WHATSAPP)).toBe('https://wa.me/84000000000');
+  });
+});
+
+describe('opensMessengerApp', () => {
+  it('opensMessengerApp_forMessengerWithChatLink_isTrue', () => {
+    expect([WHATSAPP, TELEGRAM, ZALO, KAKAOTALK].every(opensMessengerApp)).toBe(true);
+  });
+
+  it('opensMessengerApp_forWeChatWithoutChatLink_isFalse', () => {
+    expect(opensMessengerApp(WECHAT)).toBe(false);
   });
 });
 

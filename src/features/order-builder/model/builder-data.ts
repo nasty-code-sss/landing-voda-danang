@@ -2,8 +2,8 @@ import type { Brand } from '../../../entities/brand/model/brand';
 import type { MissingOrderPart, PaymentMethod, QuantityLimits } from '../../../entities/order/model/order';
 import type { MessageLanguage, OrderMessageTexts } from '../../../entities/order/model/order-message';
 import type { Pump } from '../../../entities/pump/model/pump';
-import type { MessengerContact } from '../../../shared/api/messenger-link';
-import type { SiteConfig } from '../../../shared/config/site-config';
+import { CONTACT_CARD_MESSENGER, type MessengerContact } from '../../../shared/api/messenger-link';
+import type { MessengerId, SiteConfig } from '../../../shared/config/site-config';
 import { dictionaryFor, text, type Dictionaries, type Dictionary } from '../../../shared/i18n/dictionary';
 import { pluralFormsOf, type PluralForms } from '../../../shared/i18n/plural';
 
@@ -61,11 +61,15 @@ export function brandsFromConfig(config: SiteConfig): Brand[] {
   }));
 }
 
+function linkTemplateOf(config: SiteConfig, id: MessengerId): string | null {
+  return id === CONTACT_CARD_MESSENGER ? null : config.messengers.links[id];
+}
+
 export function messengersFor(config: SiteConfig, dictionary: Dictionary, language: string): MessengerTarget[] {
   const order = config.messengers.order[language] ?? [];
   return order.map((id) => ({
     id,
-    baseUrl: config.messengers.links[id],
+    linkTemplate: linkTemplateOf(config, id),
     contact: config.contacts[id],
     label: text(dictionary, `messenger.${id}`),
   }));

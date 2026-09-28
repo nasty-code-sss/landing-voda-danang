@@ -7,6 +7,9 @@ const LANGUAGE_CODE = /^[a-z]{2}$/;
 const INTERNATIONAL_PHONE = /^\+\d{6,15}$/;
 const DIGITS_ONLY_PHONE = /^\d{6,15}$/;
 const TELEGRAM_USERNAME = /^[A-Za-z][A-Za-z0-9_]{4,31}$/;
+const KAKAO_CHANNEL_ID = /^_[A-Za-z0-9]+$/;
+const WECHAT_ID = /^[A-Za-z_][A-Za-z0-9_-]{5,19}$/;
+const CONTACT_PLACEHOLDER = '{contact}';
 const CURRENCY_CODE = /^[A-Z]{3}$/;
 const COUNTRY_CODE = /^[A-Z]{2}$/;
 const FLAG_CODE = /^[a-z]{2}$/;
@@ -17,7 +20,11 @@ const clockTime = z.string().regex(CLOCK_TIME);
 const identifier = z.string().regex(IDENTIFIER);
 const languageCode = z.string().regex(LANGUAGE_CODE);
 const amount = z.int().nonnegative();
-const messengerId = z.enum(['whatsapp', 'telegram', 'zalo']);
+const linkedMessengerId = z.enum(['whatsapp', 'telegram', 'zalo', 'kakaotalk']);
+const messengerId = z.enum([...linkedMessengerId.options, 'wechat']);
+const chatLinkTemplate = z.url().refine((template) => template.includes(CONTACT_PLACEHOLDER), {
+  message: `must contain ${CONTACT_PLACEHOLDER}`,
+});
 const nonEmptyText = z.string().min(1);
 const fontSubset = z.string().regex(IDENTIFIER);
 
@@ -50,6 +57,9 @@ const rawSiteConfigSchema = z.object({
     whatsapp: z.string().regex(DIGITS_ONLY_PHONE),
     telegram: z.string().regex(TELEGRAM_USERNAME),
     zalo: z.string().regex(DIGITS_ONLY_PHONE),
+    kakaotalk: z.string().regex(KAKAO_CHANNEL_ID),
+    wechat: z.string().regex(WECHAT_ID),
+    wechat_qr: z.url(),
   }),
   warehouse: z.object({
     street: nonEmptyText,
@@ -111,9 +121,10 @@ const rawSiteConfigSchema = z.object({
   messengers: z.object({
     order: z.record(languageCode, z.array(messengerId).min(1)),
     links: z.object({
-      whatsapp: z.url(),
-      telegram: z.url(),
-      zalo: z.url(),
+      whatsapp: chatLinkTemplate,
+      telegram: chatLinkTemplate,
+      zalo: chatLinkTemplate,
+      kakaotalk: chatLinkTemplate,
     }),
   }),
   maps: z.object({
@@ -233,7 +244,15 @@ function toSiteConfig(raw: RawSiteConfig) {
     },
     money: raw.money,
     time: raw.time,
-    contacts: raw.contacts,
+    contacts: {
+      phone: raw.contacts.phone,
+      whatsapp: raw.contacts.whatsapp,
+      telegram: raw.contacts.telegram,
+      zalo: raw.contacts.zalo,
+      kakaotalk: raw.contacts.kakaotalk,
+      wechat: raw.contacts.wechat,
+      wechatQr: raw.contacts.wechat_qr,
+    },
     warehouse: raw.warehouse,
     owner: {
       name: raw.owner.name,
@@ -300,6 +319,7 @@ function toSiteConfig(raw: RawSiteConfig) {
 
 export type SiteConfig = ReturnType<typeof toSiteConfig>;
 export type MessengerId = z.infer<typeof messengerId>;
+export type LinkedMessengerId = z.infer<typeof linkedMessengerId>;
 export type TrustPoint = keyof SiteConfig['trust'];
 export type ZoneArea = SiteConfig['zone'][number];
 

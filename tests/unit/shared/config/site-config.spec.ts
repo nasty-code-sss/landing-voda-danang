@@ -40,6 +40,27 @@ describe('parseSiteConfig', () => {
     );
   });
 
+  it('parseSiteConfig_withChatLinkWithoutContactPlaceholder_throwsNamingTheMessenger', () => {
+    const raw = rawConfigFixture();
+    const links = { ...raw.messengers.links, kakaotalk: 'https://pf.kakao.com/' };
+
+    expect(() => parseSiteConfig({ ...raw, messengers: { ...raw.messengers, links } })).toThrow(/messengers\.links\.kakaotalk/);
+  });
+
+  it('parseSiteConfig_withWeChatIdStartingWithDigit_throwsNamingTheField', () => {
+    const raw = rawConfigFixture();
+
+    expect(() => parseSiteConfig({ ...raw, contacts: { ...raw.contacts, wechat: '8mywater' } })).toThrow(/contacts\.wechat/);
+  });
+
+  it('parseSiteConfig_withKakaoChannelWithoutUnderscore_throwsNamingTheField', () => {
+    const raw = rawConfigFixture();
+
+    expect(() => parseSiteConfig({ ...raw, contacts: { ...raw.contacts, kakaotalk: 'mywaterdemo' } })).toThrow(
+      /contacts\.kakaotalk/,
+    );
+  });
+
   it('parseSiteConfig_withLanguageMissingFlag_throwsNamingTheLanguage', () => {
     const raw = rawConfigFixture();
     const { vi: _vi, ...flagsWithoutVietnamese } = raw.languages.flags;

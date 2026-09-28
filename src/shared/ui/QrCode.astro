@@ -1,0 +1,34 @@
+---
+import { QR_QUIET_ZONE_MODULES, qrCodeShape } from '../lib/qr-code';
+
+interface Props {
+  text: string;
+  label: string;
+}
+
+const { text, label } = Astro.props;
+const shape = qrCodeShape(text);
+const side = shape.modules + QR_QUIET_ZONE_MODULES * 2;
+const origin = -QR_QUIET_ZONE_MODULES;
+---
+
+<svg class="qr-code" viewBox={`${origin} ${origin} ${side} ${side}`} role="img" aria-label={label} shape-rendering="crispEdges">
+  <rect class="qr-code-light" x={origin} y={origin} width={side} height={side}></rect>
+  <path class="qr-code-dark" d={shape.darkPath}></path>
+</svg>
+
+<style>
+  .qr-code {
+    display: block;
+    width: 160px;
+    height: 160px;
+  }
+
+  .qr-code-light {
+    fill: var(--color-surface);
+  }
+
+  .qr-code-dark {
+    fill: var(--color-ink);
+  }
+</style>

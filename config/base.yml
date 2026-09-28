@@ -30,6 +30,9 @@ contacts:
   whatsapp: "84000000000"
   telegram: mywater_danang_demo
   zalo: "0000000000"
+  kakaotalk: _mywaterdemo
+  wechat: mywater_danang_demo
+  wechat_qr: https://u.wechat.com/mywater_danang_demo
 
 warehouse:
   street: Địa chỉ mẫu, phường Ngũ Hành Sơn
@@ -112,12 +115,13 @@ messengers:
     en: [whatsapp, telegram, zalo]
     vi: [zalo, whatsapp, telegram]
     ru: [telegram, whatsapp, zalo]
-    ko: [whatsapp, telegram, zalo]
-    zh: [whatsapp, telegram, zalo]
+    ko: [kakaotalk, whatsapp, telegram, zalo]
+    zh: [wechat, whatsapp, telegram, zalo]
   links:
-    whatsapp: https://wa.me/
-    telegram: https://t.me/
-    zalo: https://zalo.me/
+    whatsapp: https://wa.me/{contact}
+    telegram: https://t.me/{contact}
+    zalo: https://zalo.me/{contact}
+    kakaotalk: https://pf.kakao.com/{contact}/chat
 
 maps:
   search_url: https://www.google.com/maps/search/?api=1&query=

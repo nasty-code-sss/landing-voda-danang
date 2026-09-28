@@ -34,12 +34,13 @@ function illustrationSource(): string {
 function messengerChips(messengers: readonly string[]): ShareElement {
   return element(
     'div',
-    { display: 'flex', gap: 12 },
+    { display: 'flex', flexWrap: 'wrap', gap: 12 },
     messengers.map((name) =>
       element(
         'div',
         {
           display: 'flex',
+          flexShrink: 0,
           padding: '8px 22px',
           borderRadius: 999,
           background: COLORS.sea,

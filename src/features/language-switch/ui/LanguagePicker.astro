@@ -60,7 +60,7 @@ const { brandName, options, storageKey, defaultLanguage } = Astro.props;
     text-align: center;
   }
 
-  .js .picker[data-pending] {
+  :global(.js) .picker[data-pending] {
     visibility: hidden;
   }
 

@@ -15,6 +15,25 @@ test.describe('scenario 9: site root follows the browser language', () => {
       await page.goto('./');
       await page.waitForURL(/\/vi\/$/);
     });
+
+    test('language list never shows while the redirect script is still loading', async ({ page }) => {
+      let releaseScripts: () => void = () => undefined;
+      const scriptsHeld = new Promise<void>((resolve) => {
+        releaseScripts = resolve;
+      });
+      await page.route('**/_astro/*.js', async (route) => {
+        await scriptsHeld;
+        await route.continue();
+      });
+      const picker = page.locator('[data-language-picker]');
+
+      await page.goto('./', { waitUntil: 'commit' });
+      await expect(picker).toBeAttached();
+      await expect(picker).toBeHidden();
+
+      releaseScripts();
+      await page.waitForURL(/\/ru\/$/);
+    });
   });
 
   for (const { locale, language } of [

@@ -73,6 +73,13 @@ test.describe('page blocks around the builder', () => {
       .toMatchObject({ block: 'hero' });
   });
 
+  test('header has no demo strip, the footer still says the service is a demo', async ({ page }) => {
+    await page.goto('en/');
+
+    await expect(page.locator('.site-header')).not.toContainText(/demo/i);
+    await expect(page.locator('.footer-demo')).toBeVisible();
+  });
+
   test('language switch in the footer keeps the chosen brand', async ({ page }) => {
     await page.goto('ru/?brand=lavie');
 
